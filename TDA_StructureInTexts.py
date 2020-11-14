@@ -19,7 +19,7 @@ print(cv_dataframe.to_string())
 
 
 data = np.array(cv_dataframe)  # Array of length 4 (In this case)
-print(data)
+takens_vector = np.concatenate(data)
 
 
 def takensEmbedding(data, delay, dimension):
@@ -34,13 +34,29 @@ def takensEmbedding(data, delay, dimension):
 
 
 # Embedded into 2 Dimensions
-embedded_data3 = takensEmbedding(data, 1, 2)
+embedded_data2 = takensEmbedding(data, 1, 2)
 
 # Plot into 2D
 fig = plt.figure()
 
+# plot the 2D embedding
+ax = fig.add_subplot(3, 1, 2, projection='3d')
+ax.plot(embedded_data2[0, :], embedded_data2[1, :]);
+plt.show()
 
+########################################################
+########################################################
+########################################################
+########################################################
+
+
+''' NOT WORKING YET
+
+# Embedded into 3 Dimensions
+embedded_data3 = takensEmbedding(data, 1, 3)
 # plot the 3D embedding
 ax = fig.add_subplot(3, 1, 3, projection='3d')
 ax.plot(embedded_data3[0, :], embedded_data3[1, :], embedded_data3[2, :]);
 plt.show()
+
+'''
