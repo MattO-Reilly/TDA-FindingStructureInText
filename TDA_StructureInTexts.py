@@ -1,15 +1,31 @@
+########################################################
+########################################################
+############                        ####################
+############    PACKAGES            ####################
+############                        ####################
+########################################################
+########################################################
+
 import numpy as np  # linear algebra
 import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
 import math  # math fun
 import matplotlib.pyplot as plt  # plotting
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
+
 a_file = open("sample.txt")
 lines = a_file.readlines()
 
+########################################################
+########################################################
+############                        ####################
+############   WORD COUNT VECTORS   ####################
+############                        ####################
+########################################################
+########################################################
+
 
 CountVec = CountVectorizer(ngram_range=(0, 1))
-# transform
 Count_data = CountVec.fit_transform(lines)
 
 # create dataframe
@@ -19,7 +35,17 @@ print(cv_dataframe.to_string())
 
 
 data = np.array(cv_dataframe)  # Array of length 4 (In this case)
-takens_vector = np.concatenate(data)
+takens_vector = np.concatenate(data) #Convert Array to single vector.
+
+
+
+########################################################
+########################################################
+############                        ####################
+############   Takens Embedding     ####################
+############                        ####################
+########################################################
+########################################################
 
 
 def takensEmbedding(data, delay, dimension):
@@ -44,10 +70,6 @@ ax = fig.add_subplot(3, 1, 2, projection='3d')
 ax.plot(embedded_data2[0, :], embedded_data2[1, :]);
 plt.show()
 
-########################################################
-########################################################
-########################################################
-########################################################
 
 
 ''' NOT WORKING YET
