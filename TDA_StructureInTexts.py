@@ -35,9 +35,7 @@ print(cv_dataframe.to_string())
 
 
 data = np.array(cv_dataframe)  # Array of length 4 (In this case)
-takens_vector = np.concatenate(data) #Convert Array to single vector.
-
-
+takens_vector = np.concatenate(data)  # Convert Array to single vector.
 
 ########################################################
 ########################################################
@@ -60,16 +58,26 @@ def takensEmbedding(data, delay, dimension):
 
 
 # Embedded into 2 Dimensions
-embedded_data2 = takensEmbedding(data, 1, 2)
+embedded_data2 = takensEmbedding(takens_vector, 1, 2)
 
-# Plot into 2D
+# Plot into 3D
+fig = plt.figure()
+
+# plot the 2D embedding
+ax = fig.add_subplot(3, 1, 2)
+ax.plot(embedded_data2[0, :], embedded_data2[1, :]);
+plt.show()
+
+# Embedded into 3 Dimensions
+embedded_data2 = takensEmbedding(takens_vector, 1, 2)
+
+# Plot into 3D
 fig = plt.figure()
 
 # plot the 2D embedding
 ax = fig.add_subplot(3, 1, 2, projection='3d')
-ax.plot(embedded_data2[0, :], embedded_data2[1, :]);
+ax.plot(embedded_data3[0, :], embedded_data3[1, :], embedded_data3[2, :]);
 plt.show()
-
 
 
 ''' NOT WORKING YET
