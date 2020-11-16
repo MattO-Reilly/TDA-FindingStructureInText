@@ -12,6 +12,9 @@ import math  # math fun
 import matplotlib.pyplot as plt  # plotting
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
+from ripser import ripser  # persistent homology package
+from persim import plot_diagrams, bottleneck  # analyzing Persistence Diagrams
+
 
 a_file = open("sample.txt")  # sample.txt
 lines = a_file.readlines()
@@ -74,3 +77,18 @@ fig = plt.figure()
 ax = fig.add_subplot(3, 1, 2, projection='3d')
 ax.plot(embedded_data3[0, :], embedded_data3[1, :], embedded_data3[2, :]);
 plt.show()
+
+
+########################################################
+########################################################
+############                        ####################
+############  Persistent Homology   ####################
+############                        ####################
+########################################################
+########################################################
+
+diagrams = ripser(np.transpose(embedded_data3))['dgms']
+plot_diagrams(diagrams, show=True)
+
+
+#persim.bottleneck(dgm1, dgm2, matching=False)
