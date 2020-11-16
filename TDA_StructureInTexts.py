@@ -25,9 +25,10 @@ import sklearn
 ########################################################
 
 
-a_file = open("./texts/sample.txt")  # DylanThomas/sample.txt
+a_file = open(("./texts/sample.txt").lower())  # DylanThomas/sample.txt
 Sample = a_file.readlines()
-a_file = open("./texts/DylanThomas.txt")  # DylanThomas/sample.txt
+a_file = open(("./texts/DylanThomas.txt").lower())  # DylanThomas/sample.txt
+
 DylanThomas = a_file.readlines()
 
 ########################################################
