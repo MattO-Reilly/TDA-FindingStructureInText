@@ -16,7 +16,7 @@ from ripser import ripser  # persistent homology package
 from persim import plot_diagrams, bottleneck  # analyzing Persistence Diagrams
 
 
-a_file = open("DylanThomas.txt")  # sample.txt
+a_file = open("./texts/DylanThomas.txt")  # sample.txt
 lines = a_file.readlines()
 
 ########################################################
@@ -61,7 +61,7 @@ def takensEmbedding(data, delay, dimension):
 
 # Embedded into 2 Dimensions
 embedded_data2 = takensEmbedding(takens_vector, 1, 2)
-# Plot into 3D
+# Plot into 2D
 fig = plt.figure()
 # plot the 2D embedding
 ax = fig.add_subplot(3, 1, 2)
