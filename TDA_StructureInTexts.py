@@ -1,7 +1,7 @@
 ########################################################
 ########################################################
 ############                        ####################
-############    PACKAGES            ####################
+############       PACKAGES         ####################
 ############                        ####################
 ########################################################
 ########################################################
@@ -15,6 +15,7 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from ripser import ripser, Rips  # persistent homology package
 from persim import plot_diagrams, bottleneck  # analyzing Persistence Diagrams
 import sklearn
+import gudhi
 
 ########################################################
 ########################################################
@@ -28,8 +29,8 @@ import sklearn
 a_file = open(("./texts/sample.txt").lower())  # DylanThomas/sample.txt
 Sample = a_file.readlines()
 a_file = open(("./texts/DylanThomas.txt").lower())  # DylanThomas/sample.txt
-
 DylanThomas = a_file.readlines()
+
 
 ########################################################
 ########################################################
@@ -128,3 +129,5 @@ wourd_count(Sample)
 takensEmbedding(takens_vector, 1, 3)
 plot_embedding(embeddedData, 3)
 plot_persistence_diagram(3)
+
+#gudhi.plot_persistence_barcode(embedding_3d)
