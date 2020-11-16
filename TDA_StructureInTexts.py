@@ -16,7 +16,7 @@ from ripser import ripser  # persistent homology package
 from persim import plot_diagrams, bottleneck  # analyzing Persistence Diagrams
 
 
-a_file = open("sample.txt")  # sample.txt
+a_file = open("DylanThomas.txt")  # sample.txt
 lines = a_file.readlines()
 
 ########################################################
@@ -34,7 +34,7 @@ Count_data = CountVec.fit_transform(lines)
 # create dataframe
 cv_dataframe = pd.DataFrame(
     Count_data.toarray(), columns=CountVec.get_feature_names())
-
+print(cv_dataframe)
 
 data = np.array(cv_dataframe)  # Array of length 4 (In this case)
 takens_vector = np.concatenate(data)  # Convert Array to single vector.
