@@ -66,7 +66,8 @@ a_file = open(("./texts/DylanThomas.txt").lower())  # DylanThomas/sample.txt
 DylanThomas = a_file.readlines()
 a_file = open(("./texts/Hemingway.txt").lower())  # DylanThomas/sample.txt
 Hemingway = a_file.readlines()
-
+a_file = open(("./texts/f-scott.txt").lower())  # DylanThomas/sample.txt
+fscott = a_file.readlines()
 ########################################################
 ########################################################
 ############                        ####################
@@ -185,6 +186,14 @@ plot_persistence_diagram(3)
 # Hemingway Text
 print("Hemingway")
 standardize_text(Hemingway)
+wourd_count(std_text)
+takensEmbedding(takens_vector, 1, 3)
+plot_embedding(embeddedData, 3)
+plot_persistence_diagram(3)
+
+# Hemingway Text
+print("f-scott")
+standardize_text(fscott)
 wourd_count(std_text)
 takensEmbedding(takens_vector, 1, 3)
 plot_embedding(embeddedData, 3)
