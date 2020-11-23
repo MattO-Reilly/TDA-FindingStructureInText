@@ -95,7 +95,7 @@ def standardize_text(text):
     print(list_1)
 
 
-def wourd_count(std_text):
+def word_count(std_text):
     global takens_vector
     appended_data = pd.DataFrame()
     CountVec = CountVectorizer(ngram_range=(0, 1))
@@ -104,7 +104,7 @@ def wourd_count(std_text):
         cv_dataframe = pd.DataFrame(
             Count_data.toarray(), columns=CountVec.get_feature_names())
         appended_data = appended_data.append(cv_dataframe)
-    
+
     # replaces NaN values with 0 and convert array to single vector.
     takens_vector = np.concatenate(np.array(appended_data.replace(np.nan, 0)))
     return takens_vector
@@ -161,14 +161,14 @@ def plot_persistence(text, embeddedData, dimension):
 # Sample Text
 print("Sample text")
 standardize_text(Sample)
-wourd_count(list_1)
+word_count(list_1)
 takensEmbedding(takens_vector, 1, 3)
 plot_persistence(Sample, embeddedData, 3)
 
 # Dylan Thomas
 print("Dylan Thomas")
 standardize_text(DylanThomas)
-# wourd_count(list_1)
+word_count(list_1)
 #takensEmbedding(takens_vector, 1, 3)
 # plot_persistence(Sample, embeddedData, 3)
 
