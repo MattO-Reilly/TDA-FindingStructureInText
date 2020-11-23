@@ -127,7 +127,8 @@ x = takensEmbedding(takens_vector, 1, 3)
 plot_embedding(embeddedData, 3)
 d1 = ripser(embedding_3d)['dgms'][1]
 print(d1)
-'''
+
+
 standardize_text(fscott)
 wourd_count(fscott)
 takensEmbedding(takens_vector, 1, 3)

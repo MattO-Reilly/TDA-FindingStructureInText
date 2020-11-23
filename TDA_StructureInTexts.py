@@ -81,29 +81,32 @@ fscott = a_file.readlines()
 
 
 def standardize_text(text):
-    global std_text
+    global list_1
     list_1 = []
-    for i in text:
+    for line in text:
         # result = input_str.translate(string.punctuation)
-        words = nltk.word_tokenize(i)
+        words = nltk.word_tokenize(line)
         words = [word.lower() for word in words if word.isalpha()]
         stop_words = set(stopwords.words("english"))
         std_text = [i for i in words if not i in stop_words]
         lemmatizer = WordNetLemmatizer()
         std_text = lemmatizer.lemmatize(str(std_text))
-        print(std_text)
-        List_1.append(std_text)
+        list_1.append(std_text)
+    print(list_1)
 
 
 def wourd_count(std_text):
-    CountVec = CountVectorizer(ngram_range=(0, 1))
-    Count_data = CountVec.fit_transform([std_text])
-    cv_dataframe = pd.DataFrame(
-        Count_data.toarray(), columns=CountVec.get_feature_names())
-    print(cv_dataframe)
-    # Convert Array to single vector.
     global takens_vector
-    takens_vector = np.concatenate(np.array(cv_dataframe))
+    appended_data = pd.DataFrame()
+    CountVec = CountVectorizer(ngram_range=(0, 1))
+    for i in list_1:
+        Count_data = CountVec.fit_transform([i])
+        cv_dataframe = pd.DataFrame(
+            Count_data.toarray(), columns=CountVec.get_feature_names())
+        appended_data = appended_data.append(cv_dataframe)
+    
+    # replaces NaN values with 0 and convert array to single vector.
+    takens_vector = np.concatenate(np.array(appended_data.replace(np.nan, 0)))
     return takens_vector
 
 ########################################################
@@ -155,26 +158,34 @@ def plot_persistence(text, embeddedData, dimension):
 
 
 
+# Sample Text
+print("Sample text")
+standardize_text(Sample)
+wourd_count(list_1)
+takensEmbedding(takens_vector, 1, 3)
+plot_persistence(Sample, embeddedData, 3)
+
+# Dylan Thomas
+print("Dylan Thomas")
+standardize_text(DylanThomas)
+# wourd_count(list_1)
+#takensEmbedding(takens_vector, 1, 3)
+# plot_persistence(Sample, embeddedData, 3)
+
+
+'''
 # Dylan Thomas
 print("DylanThomas")
-for i in
 standardize_text(DylanThomas)
 wourd_count(std_text)
 print(max(takens_vector))
 takensEmbedding(takens_vector, 1, 3)
 plot_persistence(DylanThomas, embeddedData, 3)
 d1 = d
+'''
 
 
-# Sample Text
-print("Sample text")
-standardize_text(Sample)
-wourd_count(std_text)
-print(takens_vector)
-takensEmbedding(takens_vector, 1, 3)
-plot_persistence(Sample, embeddedData, 3)
-d2 = d
-
+'''
 # Hemingway Text
 print("Hemingway")
 standardize_text(Hemingway)
@@ -198,3 +209,4 @@ d4 = d
 # hemingway, fscott, matching=True)
 
 #print(persim.bottleneck(d1, d2))
+'''
