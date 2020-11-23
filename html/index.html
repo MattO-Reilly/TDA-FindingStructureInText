@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html>
+<link href="style.css" rel="stylesheet" type="text/css"/>
+<head>
+    <meta charset="utf-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Topological Data Analysis - The set of persistent homology in time series classification.</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async
+          src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+</head>
+<body>
+    
+    
+
+    <div id="mySidenav" class="sidebar">
+    <a href=""><ol><li> <h4> Time Series </h4></li></a>
+    <a href="#Background_Reading">Time Series and Algebraic Topology</a>
+    <a href="#SimplicialComplexs">Simplicial Complexs</a>
+    <a href="#BettiNumbers">Betti Numbers</a>
+    <a href="#Analysis">Takens Theorem</a>
+    <a href=""><li><h4> Analysing Time Series Data</h4></li>
+    <a href="#Beetles"> Example 1: Beetles </a>
+    <a href="#"> Example 2: Musical Instruments </a>
+
+    </div>
+
+
+
+<div class="content">
+    <div class="header"> 
+        <h1>Topological Data Analysis - The use of persistent homology for time series classification.</h1> </div>
+
+    <div class='intro'>
+
+        <p><b>Introduction:</b> 
+        Topological Data Analysis (TDA) is a developing branch of data science which uses statistical learning and techniques from algebraic topology, such as persistent homology to study the data. Time series that arise in biology and finance can be very chaotic in nature and data analysis can be a challenging task due to the many difficulties that arise in understanding large, high-dimensional data that contains noise. TDA is an evolving tool that can be applied to complex systems that aims to determine mathematical associations in the data by analysing patterns or properties that relate to the shape of the data, while having no preconceived idea of what the shape of the data should be. It provides a framework for analysing data that can gather information from large volumes of high-dimensional data, which is not dependant on the choice of metric and provides stability against noise. TDA does not claim to understand the inner mechanisms or make any assumptions about the mechanism of the system when analysing the shape of the data. </p>
+        <p> This project aims to explain the theory behind persistent homology and the methodology of TDA. It will also investigate the usefulness and how effective persistent homology is in comparison to more traditional methods such as k-means clustering to classify time series. Investigations will be conducted on data from flour beetle populations, musical instruments and tide levels.</p>
+
+
+
+    <div id="Background_Reading" class='Background_Reading'>
+        <h1 style="color: crimson; text-align: center"> <u>Background Reading</u> </h1>
+        <h3><u>What is a time series?</u></h3>
+        <p> A time series is a collection of numerical data points that are measured at successive evenly spaced intervals of time and indexed in time order. 
+        <br>
+
+        Time series are made up of four components:
+        <ol>
+            <li>Trend variations - The predictable long-term pattern of the time series.</li>
+            <li>Seasonal variations- Repeated behaviour in the data that occurs at regular intervals.</li>
+            <li>Cyclical variations - Occurs when a series follows an up and down pattern that is not seasonal. </li>
+            <li>Random variations – Do not fall under any of the above three classifications. </li>
+
+
+        </ol></p>
+        <p> Examples of time series include the continuous monitoring of a person’s heart rate, hourly readings of air temperature, daily closing price of a company stock, monthly rainfall data and yearly sales figures. </p>
+    
+
+        
+
+        <h3><u> What is algebraic topology? </u></h3>
+        <p>Algebraic topology uses methods from abstract algebra to answer topological questions by mapping spaces to algebraic objects. It uses abstract algebraic techniques like groups or rings, as many hole structures can be represented by these, to study objects and their properties that are homoeomorphic ie: invariant under continuous deformation. 
+        <br>
+
+        
+        <ol>
+            <li>Homotopy -   Two continuous functions from one topological space to another are called homotopic if one can be "continuously deformed" into the other</li>
+            <li>Homology - Is a general way of associating a sequence of algebraic objects such as abelian groups or modules to other mathematical objects such as topological spaces. </li>
+            <li>Cohomology - Cohomology can be viewed as a method of assigning richer algebraic invariants to a space than homology. </li>
+            
+        </ol>
+        Homotopy, homology, and cohomology groups are the main areas of study in algebraic topology. In a very broad sense they attempt to capture the number of k-dimensional holes in a topological space. </p></div>
+
+    <div id="SimplicialComplexs" class="SimplicialComplexs">
+        <h3><u>Simplicial Complexs</u></h3>
+        <p>Simplicial Complexes are defined as collections of simplices which satisfy the following conditions.
+            <li>The complex must contain every face of any simplex belonging to it.</li>
+            <li>Any simplices that overlap do so on a common face</li>
+            <br>
+            These simplicial complexes are often used To Triangulate Topological Spaces that they are Homeomorphic to, 
+            However in Persistent Homology we use a special type called a Vietoris-Rips Complex.
+            In these complexes two vertices x and y in a dataset are only connected by an edge if for an assigned value e the euclidean distance d(x,y) is less than e </p>
+    </div>
+
+
+    <div id="BettiNumbers" class="BettiNumbers">
+        <h3> <u>Betti Numbers and Holes</u> </h3>
+        <p>A hole in a mathematical object is a topological structure which prevents the object from being continuously shrunk to a point. When dealing with topological spaces, a disconnectivity is interpreted as a hole in the space.
+        <br>
+        <p>In algebraic topology, the Betti numbers are used to distinguish topological spaces based on the connectivity of n-dimensional simplicial complexes.</p>
+        <p>Betti number: Bn = dim(ker(dn))-dim(image(dn+1)) </p>
+
+        Informally, the kth Betti number refers to the number of k-dimensional holes on a topological surface. The first few Betti numbers have the following definitions for 0-dimensional, 1-dimensional, and 2-dimensional simplicial complexes:
+
+        
+        <ol>
+            <li>b0 is the number of connected components</li>
+            <li>b1 is the number of one-dimensional or "circular" holes </li>
+            <li>b2 is the number of two-dimensional "voids" or "cavities" </li>
+            
+        </ol>
+    </div>
+    <div id="PersistentHomology" class="PersistentHomology">
+        <h3><u>What is persistent homology?</u> </h3>
+        <p>Persistent homology is a method for computing topological features of a space at different spatial resolutions. More persistent features are detected over a wide range of spatial scales and are deemed more likely to represent true features of the underlying space rather than noise or choice of parameters. </p>
+        
+
+        
+       
+        <p> To find the persistent homology of a space, the space must first be represented as a simplicial complex. A distance function on the underlying space corresponds to a filtration of the simplicial complex, that is a nested sequence of increasing subsets. </p>
+    </div>
+
+    <div class="PersistenceDiagram">
+        <h3><u>Bar Codes and Persistence Diagrams</u> </h3>
+        <p>A bar code is a visual representation of the persistent homology where long bars represent features and short bars represent noise. </p>
+        
+        
+       
+        <p>A persistence diagram captures the birth and death of holes. The persistence diagram is very similar to the barcode. The x-coordinate of that point is when that point was born. The y-coordinate is when that feature died. The distance between the 45 degree line and the point is the duration of the persistence for that feature. Features that were short lived occur close to the 45 degree line, while more persistent features occur at a greater distance from the 45 degree line.  </p>
+
+
+        <h3><u>Takens' Theorem:</u></h3>
+        <div class="Takens">
+        <p><u><b>Takens' Theorem:</b></u>
+        <br> Let \(M\) be a compact \(C^2\) differentiable manifold of dimension \(m\).
+        Let \(\Phi: M \rightarrow M\) be a \(C^2\)  diffeomorphism and let \(\mu: M \rightarrow \mathbb{R}\) be any \(C^2\) map. It is a generic property that the mapping 
+        \begin{equation}
+        \Phi_{\phi, \mu}: M \rightarrow \mathbb{R}^{2 m+1}, x \mapsto\left(\mu(x), \mu \phi(x), \mu \phi^{2}(x), \ldots, \mu \phi^{2 m}(x)\right)
+        \end{equation}
+        is an embedding.</p></div>
+
+        <p>Takens’ embedding theorem states that we can reconstruct a time series considering time delays. A series can be reconstructed in phase space where m is the embedding dimension (the smallest dimension required to embed an object) and t the time delay. Thus, instead of analysing the series along time, we analyse its trajectory as a set of visited states in an m-dimensional Euclidean space. This is particularly useful to extract the topological behaviour we are interested in. </p>
+
+        <p> In the study of dynamical systems, a delay embedding theorem gives the conditions under which a chaotic dynamical system can be reconstructed from a sequence of observations of the state of a dynamical system. The reconstruction preserves the properties of the dynamical system that do not change under smooth coordinate changes (i.e., diffeomorphisms), but it does not preserve the geometric shape of structures in phase space. </p>
+
+
+    </div>
+
+
+
+    <div id="Analysis" class="Analysis" style="margin-top: 30px" >
+        <h1 style="color: crimson; text-align: center"> <u>Analysis </u></h1>
+       
+        
+    <div id="Beetles" class="Beetles">
+
+        <h2><u> Example 1: Beetles</u></h2>
+        <p>Our aim was to compare results with a paper written by Cássio M.M. Pereira and Rodrigo F. de Mello entitled "Persistent homology for time series and spatial data clustering"
+        <br>
+        Their paper was concerned with analysing Time Series Data with Persistent Homology, K Means was used as a control to show comparative results of a less accurate method. </p>
+
+        <p> Our Experiment was interested in if we could clasify Time Series Data with Persistent Homology more efficiently than K-Means. The two classifications were Stable and Aperiodic. We used the same Beetle model data from *Pereira and *Mello to compare our results with them.</p>
+
+        <p>We used R to programme our results. These are some Libraries we used to analyse our Data in R.</p>
+        <pre>
+            <code>
+#ODE 
+library(deSolve)
+
+#Graphs and data Manipulation
+library(tidyverse)
+
+#Confusion Matrix
+library(caret) 
+
+#Persistent Homology
+library(nonlinearTseries)
+library(TDAstats)
+
+#BettiNumbers
+library(matrixStats)
+            </code>
+        </pre>
+
+        <p> Firstly, We need to derive 200 Aperiodic Time Series and 200 Stable Aperiodic Time Series. We enter some Parameters and Initialise them.</p>
+
+        <p> Each of the Time Series is converted to a row vector and then appended to a Data Frame which contains all of the Time Series.</p>
+
+        <h3><u>Aperiodic Time Series</u></h3>
+        <pre>
+            <code>
+Time_Series_Data<- data.frame()
+for (i in 1:200){
+  parameters2 <- c(b = 7.48, c_ea = 0.009, c_pa = 0.004, c_el = 0.012, u_p = 0, u_l = 0.267, u_a = 0.96)
+
+  state2 <- c(L = sample(2:100,1), P = sample(2:100,1), A = sample(2:100,1))
+
+  beetles2<-function(t, state, parameters) {
+    with(as.list(c(state, parameters)),{
+      # rate of change
+      L1 <- b * A * exp((-c_el * L) - (c_ea * A))
+      P1 <- L * (1 - u_l) 
+      A1 <- (P * exp(-c_pa * A) + A * (1 - u_a)) 
+      
+      # return the rate of change
+      list(c(L1, P1, A1))
+    })
+  }
+
+
+Aperiodic_i <- ode(y = state2, times = seq(0, 200), func = beetles2, parms = parameters2, method = "iteration")
+  
+
+aperiodic <- as.data.frame(Aperiodic_i) %>% select(A)
+
+transposeAperiodic <- t(aperiodic) # Turns Column Vector into Row Vector
+
+Time_Series_Data <- rbind.data.frame(transposeAperiodic,Time_Series_Data) 
+}
+            </code>
+        </pre>
+
+        <h3><u>Stable Time Series</u></h3>
+
+        <pre>
+            <code>
+for (i in 1:200){
+  parameters1 <- c(b = 7.48, c_ea = 0.009, c_pa = 0.004, c_el = 0.012, u_p = 0, u_l = 0.267, u_a = 0.73)
+
+  state1 <- c(L = sample(2:100,1), P = sample(2:100,1), A = sample(2:100,1))
+  
+  #ODE's that model Beetles
+  beetles1<-function(t, state, parameters) {
+    with(as.list(c(state, parameters)),{
+      # rate of change
+      L1 <- b * A * exp((-c_el * L) - (c_ea * A))
+      P1 <- L * (1 - u_l) 
+      A1 <- (P * exp(-c_pa * A) + A * (1 - u_a)) 
+      
+      # return the rate of change
+      list(c(L1, P1, A1))
+    }) # end with(as.list ...
+  }
+
+  
+  Stable_i <- ode(y = state1, times = seq(0, 200), func = beetles1, parms = parameters1, method = "iteration")
+  
+#Time_Series_Stable1 <- rbind.data.frame(Time_Series_Stable,Time_Series_Stable1)
+stable <- as.data.frame(Stable_i) %>% select(A)
+transposeStable<-t(stable)
+Time_Series_Data <- rbind.data.frame(transposeStable,Time_Series_Data)
+}
+            </code>
+        </pre>
+
+
+        <p>We rename each Time Series (Aperiodic or Stable) by the following code.</p>
+
+        <pre>
+            <code>
+(setattr(Time_Series_Data, "row.names", c(rep("Stable",200),rep("Aperiodic",200))))
+            </code>
+        </pre>
+
+        <h3><u> K-Means Clustering</u></h3>
+
+        <p> The K-Means Clustering Algorithm is applied to our Time Series as follows; We are attempting to group the data into Aperiodic and Stable.</p>
+
+        <pre>
+            <code>
+set.seed(250)
+kmtotal <- kmeans(Time_Series_Data, 2, iter.max = 10, nstart = 1)
+
+            </code>
+        </pre>
+
+        <p> We can analyse the K-Means Clustering Algorithm by looking at a Confusion Matrix of the Data.</p>
+       
+    <div id="ConfusionMatrix" class="ConfusionMatrix" >
+        <p>
+        \begin{aligned}
+        &\mathrm{Correct}\\
+        &\begin{array}{rr}
+        \text {km Cluster} & Yes & No \\
+        Stable & 200 & 0 \\
+        Aperiodic & 81 & 119
+        \end{array}
+        \end{aligned}
+        </p>
+    </div>
+
+    <p> All 200 Stable Time Series are correctly clustered. However, When the algorithm clusters Aperiodic Time Series it can't cluster them correctly. </p>
+
+    
+    <h3><u> Persistent Homology Clustering</u></h3>
+
+    <p> Firstly, We will calculate the Homology and Betti Numbers for the Stable Time Series.</p>
+
+    <pre>
+        <code>
+pers_stable <- data.frame()
+for (i in 1:200){
+    x<- data.matrix(Time_Series_Data[i,])
+    a<- buildTakens(x,2,3)
+
+    hom <- calculate_homology(a,return_df = TRUE)
+    hom <- hom %>%
+    mutate(persistence = death-birth) %>%
+    mutate(persistent = ifelse(persistence > max(persistence)-0.00001, 1,0))
+
+    hom_matrix <- data_frame(hom) %>% select(dimension, persistent)
+    hom_matrix <- as.data.frame(hom_matrix) 
+    p1 <- hom_matrix[hom_matrix$persistent == '1',] 
+    pers_stable <- rbind.data.frame(pers_stable,p1) 
+}
+
+        </code>
+    </pre>
+
+    <p> We need to sort our data by Correctly and Incorrectly Clustered</p>
+
+    <pre>
+        <code>
+check_stable <- pers_stable[pers_stable$dimension == 0,]
+stable_correct_hom <- nrow(check_stable)
+stable_incorrect_hom <- 200 - stable_correct_hom
+        </code>
+    </pre>
+
+    <p>Next, We calculate the homology of aperiodic</p>
+
+    <pre>
+        <code>
+pers_aperiodic <- data.frame()
+for (i in 201:400){
+    x1<- data.matrix(Time_Series_Data[i,])
+    a1<- buildTakens(x1,2,3)
+    hom1 <- calculate_homology(a1,return_df = TRUE)
+    hom1 <- hom1 %>%
+    mutate(persistence = death-birth) %>%
+    mutate(persistent = ifelse(persistence > max(persistence)-0.00001, 1,0))
+    hom_matrix1 <- data_frame(hom1) %>% select(dimension, persistent)
+    hom_matrix1 <- as.data.frame(hom_matrix1) 
+    p2 <- hom_matrix1[hom_matrix1$persistent == '1',] 
+  
+    pers_aperiodic <- rbind.data.frame(pers_aperiodic,p2)  
+}
+        </code>
+    </pre>
+
+    <p>Again, We need to sort our data by Correctly and Incorrectly Clustered.
+
+    <pre>
+        <code>
+check_aperiodic <- pers_aperiodic[pers_aperiodic$dimension == 1,] 
+aperiodic_correct_hom <- nrow(check_aperiodic)
+aperiodic_incorrect_hom <- 200 - aperiodic_correct_hom
+        </code>
+    </pre>
+
+    <p> To compare our results with K Means we make a confusion matrix for the Persistent Homology </p>
+
+    <pre>
+        <code>
+cfm_hom <-cbind(c(stable_correct_hom,aperiodic_incorrect_hom),c(stable_incorrect_hom,aperiodic_correct_hom))
+cfm_hom
+        </code>
+    </pre>
+
+    <div id="ConfusionMatrix" class="ConfusionMatrix" >
+        <p>
+        \begin{aligned}
+        &\mathrm{Correct}\\
+        &\begin{array}{rr}
+        \text {km Cluster} & Yes & No \\
+        Stable & 200 & 0 \\
+        Aperiodic & 181 & 19
+        \end{array}
+        \end{aligned}
+        </p>
+    </div>
+</div>
+
+
+</div>
+</body>
+</html>

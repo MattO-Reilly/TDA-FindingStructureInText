@@ -12,24 +12,23 @@ import math  # math fun
 import matplotlib.pyplot as plt  # plotting
 
 # Persistent Homology
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-from ripser import ripser, Rips  # persistent homology package
-from persim import plot_diagrams, bottleneck  # analyzing Persistence Diagrams
+from sklearn.feature_extraction.text import CountVectorizer
+from ripser import *  # persistent homology package
+# analyzing Persistence Diagrams
+from persim import *
 import sklearn
-
-import xml.etree.ElementTree as ET  # Get around for a parsing error
+import persim
 import gudhi
 
 # NLP /Text standardization
 import nltk
+from nltk.stem import WordNetLemmatizer
 from nltk import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
 from nltk.tokenize import RegexpTokenizer
 from collections import Counter
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
-import string
 
-from pathlib import Path
 ########################################################
 ########################################################
 ############                        ####################
@@ -57,17 +56,21 @@ def open_file(text_file):
     root = ET.fromstring(file_to_open)
     f = open(root).lower()
     text_file = f_file.readlines()
-
 '''
 
 a_file = open(("./texts/sample.txt").lower())  # DylanThomas/sample.txt
 Sample = a_file.readlines()
+
 a_file = open(("./texts/DylanThomas.txt").lower())  # DylanThomas/sample.txt
 DylanThomas = a_file.readlines()
+
 a_file = open(("./texts/Hemingway.txt").lower())  # DylanThomas/sample.txt
 Hemingway = a_file.readlines()
+
 a_file = open(("./texts/f-scott.txt").lower())  # DylanThomas/sample.txt
 fscott = a_file.readlines()
+
+
 ########################################################
 ########################################################
 ############                        ####################
@@ -79,21 +82,25 @@ fscott = a_file.readlines()
 
 def standardize_text(text):
     global std_text
-    input_str = str(text)
-    # result = input_str.translate(string.punctuation)
-    words = nltk.word_tokenize(input_str)
-    words = [word.lower() for word in words if word.isalpha()]
-    stop_words = set(stopwords.words("english"))
-    std_text = [i for i in words if not i in stop_words]
-    print(std_text)
-    return std_text
+    list_1 = []
+    for i in text:
+        # result = input_str.translate(string.punctuation)
+        words = nltk.word_tokenize(i)
+        words = [word.lower() for word in words if word.isalpha()]
+        stop_words = set(stopwords.words("english"))
+        std_text = [i for i in words if not i in stop_words]
+        lemmatizer = WordNetLemmatizer()
+        std_text = lemmatizer.lemmatize(str(std_text))
+        print(std_text)
+        List_1.append(std_text)
 
 
 def wourd_count(std_text):
     CountVec = CountVectorizer(ngram_range=(0, 1))
-    Count_data = CountVec.fit_transform(std_text)
+    Count_data = CountVec.fit_transform([std_text])
     cv_dataframe = pd.DataFrame(
         Count_data.toarray(), columns=CountVec.get_feature_names())
+    print(cv_dataframe)
     # Convert Array to single vector.
     global takens_vector
     takens_vector = np.concatenate(np.array(cv_dataframe))
@@ -120,10 +127,10 @@ def takensEmbedding(data, delay, dimension):
     return embeddedData
 
 
-def plot_embedding(embeddedData, dimension):
+def plot_persistence(text, embeddedData, dimension):
+    global d
     if dimension == 2:
         # Embedded into 2 Dimensions
-        global embedding_2d
         embedding_2d = embeddedData
         # Plot into 2D
         fig = plt.figure()
@@ -131,10 +138,10 @@ def plot_embedding(embeddedData, dimension):
         ax = fig.add_subplot(3, 1, dimension)
         ax.plot(embedding_2d[0, :], embedding_2d[1, :]);
         plt.show()
-        return embedding_2d
+        d = ripser(embedding_2d)['dgms']
+        plot_diagrams(d, show=True)
     if dimension == 3:
         # Embedded into 3 Dimensions
-        global embedding_3d
         embedding_3d = embeddedData
         # Plot into 3D
         fig = plt.figure()
@@ -143,59 +150,51 @@ def plot_embedding(embeddedData, dimension):
         ax.plot(embedding_3d[0, :],
                 embedding_3d[1, :], embedding_3d[2, :]);
         plt.show()
-        return embedding_3d
+        d = ripser(embedding_3d)['dgms']
+        plot_diagrams(d, show=True)
 
-
-########################################################
-########################################################
-############                        ####################
-############  Persistent Homology   ####################
-############                        ####################
-########################################################
-########################################################
-
-def plot_persistence_diagram(embedding_dim):
-    if embedding_dim == 2:
-        diagrams = ripser(embedding_2d)['dgms']
-        plot_diagrams(diagrams, show=True)
-    if embedding_dim == 3:
-        diagrams = ripser(embedding_3d)['dgms']
-        plot_diagrams(diagrams, show=True)
-
-
-# persim.bottleneck(dgm1, dgm2, matching=False)
 
 
 # Dylan Thomas
 print("DylanThomas")
+for i in
 standardize_text(DylanThomas)
 wourd_count(std_text)
+print(max(takens_vector))
 takensEmbedding(takens_vector, 1, 3)
-plot_embedding(embeddedData, 3)
-plot_persistence_diagram(3)
+plot_persistence(DylanThomas, embeddedData, 3)
+d1 = d
 
 
 # Sample Text
 print("Sample text")
 standardize_text(Sample)
 wourd_count(std_text)
+print(takens_vector)
 takensEmbedding(takens_vector, 1, 3)
-plot_embedding(embeddedData, 3)
-plot_persistence_diagram(3)
+plot_persistence(Sample, embeddedData, 3)
+d2 = d
 
 # Hemingway Text
 print("Hemingway")
 standardize_text(Hemingway)
 wourd_count(std_text)
-takensEmbedding(takens_vector, 1, 3)
-plot_embedding(embeddedData, 3)
-plot_persistence_diagram(3)
+print(len(std_text))
+x = takensEmbedding(takens_vector, 1, 3)
+plot_persistence(Hemingway, embeddedData, 3)
+d3 = d
 
-# Hemingway Text
+# f-scott Text
 print("f-scott")
 standardize_text(fscott)
 wourd_count(std_text)
-takensEmbedding(takens_vector, 1, 3)
-plot_embedding(embeddedData, 3)
-plot_persistence_diagram(3)
-# gudhi.plot_persistence_barcode(embedding_3d)
+print(len(std_text))
+y = takensEmbedding(takens_vector, 1, 3)
+plot_persistence(fscott, embeddedData, 3)
+d4 = d
+
+
+# distance_bottleneck, (matching, D) = persim.bottleneck(
+# hemingway, fscott, matching=True)
+
+#print(persim.bottleneck(d1, d2))
