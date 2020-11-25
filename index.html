@@ -16,13 +16,13 @@
 
     <div id="mySidenav" class="sidebar">
     <a href=""><ol><li> <h4> Time Series </h4></li></a>
-    <a href="#Background_Reading">Time Series and Algebraic Topology</a>
+    <a href="#Background_Reading">Word count vectors, and Algebraic Topology</a>
     <a href="#SimplicialComplexs">Simplicial Complexs</a>
     <a href="#BettiNumbers">Betti Numbers</a>
     <a href="#Analysis">Takens Theorem</a>
     <a href=""><li><h4> Analysing Time Series Data</h4></li>
-    <a href="#Beetles"> Example 1: Beetles </a>
-    <a href="#"> Example 2: Musical Instruments </a>
+    <a href="#example1"> Example 1:  </a>
+    <a href="#example2"> Example 2: </a>
 
     </div>
 
@@ -42,7 +42,9 @@
             TDA systems typically only operate on numerical data and so the sample texts can't be analysed in their original state.
             We managed to get around this problem by using the python library ntlk to convert the text into a more standard form and then using 
             the python library bag of  words to convert the text into a word count vector. </p>
-        <p> This project hopes to uses topological techniques to compare different texts by the shape of their data and see how effective this is at categorising the different texts..</p>
+        
+        <p> This project hopes to uses topological techniques to compare different texts by the shape of their data and see how effective this
+            is at categorising the different texts..</p>
 
 
 
@@ -111,7 +113,7 @@
     </div>
     <div id="PersistentHomology" class="PersistentHomology">
         <h3><u>What is persistent homology?</u> </h3>
-        <p>Persistent homology is a method for computing topological features of a space at different spatial resolutions.
+        <p> Persistent homology is a method for computing topological features of a space at different spatial resolutions.
             More persistent features are detected over a wide range of spatial scales and are deemed more likely to represent true features
             of the underlying space rather than noise or choice of parameters. </p>
         
@@ -144,8 +146,9 @@
         \end{equation}
         is an embedding.</p></div>
 
-        <p>Takens’ embedding theorem states that we can reconstruct a time series considering time delays. 
-            A series can be reconstructed in phase space where m is the embedding dimension (the smallest dimension required to embed an object) and t the time delay.
+        <p>Takens’ embedding allows us to convert our vector of data points into a multi-dimensional which can then be analysed and sorted using Persistent Homology.
+            A vector can be reconstructed in phase space where m is the embedding dimension (the smallest dimension required to embed an object) and t is the time delay 
+            meaning how big the gap between consecutive points in your new m-dimensional vectors.
             Thus, instead of analysing the series along time, we analyse its trajectory as a set of visited states in an m-dimensional Euclidean space. #
             This is particularly useful to extract the topological behaviour we are interested in. </p>
 
@@ -162,33 +165,16 @@
         <h1 style="color: crimson; text-align: center"> <u>Analysis </u></h1>
        
         
-    <div id="Beetles" class="Beetles">
+    <div id="" class="">
 
-        <h2><u> Example 1: Beetles</u></h2>
-        <p>Our aim was to compare results with a paper written by Cássio M.M. Pereira and Rodrigo F. de Mello entitled "Persistent homology for time series and spatial data clustering"
-        <br>
-        Their paper was concerned with analysing Time Series Data with Persistent Homology, K Means was used as a control to show comparative results of a less accurate method. </p>
+        <h2><u> Example 1: </u></h2>
+        <p>
+       </p>
 
-        <p> Our Experiment was interested in if we could clasify Time Series Data with Persistent Homology more efficiently than K-Means. The two classifications were Stable and Aperiodic. We used the same Beetle model data from *Pereira and *Mello to compare our results with them.</p>
-
-        <p>We used R to programme our results. These are some Libraries we used to analyse our Data in R.</p>
+        <p></p>
         <pre>
             <code>
-#ODE 
-library(deSolve)
 
-#Graphs and data Manipulation
-library(tidyverse)
-
-#Confusion Matrix
-library(caret) 
-
-#Persistent Homology
-library(nonlinearTseries)
-library(TDAstats)
-
-#BettiNumbers
-library(matrixStats)
             </code>
         </pre>
         
