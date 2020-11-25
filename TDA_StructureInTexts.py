@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt  # plotting
 # Persistent Homology
 from sklearn.feature_extraction.text import CountVectorizer
 from ripser import *  # persistent homology package
+
 # analyzing Persistence Diagrams
 from persim import *
 import sklearn
@@ -99,14 +100,10 @@ def word_count(std_text):
     global takens_vector
     appended_data = pd.DataFrame()
     CountVec = CountVectorizer(ngram_range=(0, 1))
-    for i in list_1:
-        Count_data = CountVec.fit_transform([i])
-        cv_dataframe = pd.DataFrame(
-            Count_data.toarray(), columns=CountVec.get_feature_names())
-        appended_data = appended_data.append(cv_dataframe)
-
-    # replaces NaN values with 0 and convert array to single vector.
-    takens_vector = np.concatenate(np.array(appended_data.replace(np.nan, 0)))
+    Count_data = CountVec.fit_transform(std_text)
+    cv_dataframe = pd.DataFrame(
+        Count_data.toarray(), columns=CountVec.get_feature_names())
+    takens_vector = np.concatenate(np.array(cv_dataframe, dtype=np.float32))
     return takens_vector
 
 ########################################################
@@ -141,7 +138,7 @@ def plot_persistence(text, embeddedData, dimension):
         ax = fig.add_subplot(3, 1, dimension)
         ax.plot(embedding_2d[0, :], embedding_2d[1, :]);
         plt.show()
-        d = ripser(embedding_2d)['dgms']
+        d = ripser(embedding_2d)['dgms'][0]
         plot_diagrams(d, show=True)
     if dimension == 3:
         # Embedded into 3 Dimensions
@@ -153,9 +150,20 @@ def plot_persistence(text, embeddedData, dimension):
         ax.plot(embedding_3d[0, :],
                 embedding_3d[1, :], embedding_3d[2, :]);
         plt.show()
-        d = ripser(embedding_3d)['dgms']
+        d = ripser(embedding_3d)['dgms'][0]
         plot_diagrams(d, show=True)
 
+
+np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
+
+
+########################################################
+########################################################
+############                        ####################
+############     Prepare texts      ####################
+############                        ####################
+########################################################
+########################################################
 
 
 # Sample Text
@@ -164,49 +172,65 @@ standardize_text(Sample)
 word_count(list_1)
 takensEmbedding(takens_vector, 1, 3)
 plot_persistence(Sample, embeddedData, 3)
+sample_d = np.array(d)  # Birth and death array (USed for bottleneck distance)
 
 # Dylan Thomas
 print("Dylan Thomas")
 standardize_text(DylanThomas)
 word_count(list_1)
-#takensEmbedding(takens_vector, 1, 3)
-# plot_persistence(Sample, embeddedData, 3)
-
-
-'''
-# Dylan Thomas
-print("DylanThomas")
-standardize_text(DylanThomas)
-wourd_count(std_text)
-print(max(takens_vector))
 takensEmbedding(takens_vector, 1, 3)
-plot_persistence(DylanThomas, embeddedData, 3)
-d1 = d
-'''
+plot_persistence(Sample, embeddedData, 3)
+# Birth and death array (USed for bottleneck distance)
+DylanThomas_d = np.array(d)
 
-
-'''
 # Hemingway Text
 print("Hemingway")
 standardize_text(Hemingway)
-wourd_count(std_text)
-print(len(std_text))
-x = takensEmbedding(takens_vector, 1, 3)
-plot_persistence(Hemingway, embeddedData, 3)
-d3 = d
+word_count(list_1)
+takensEmbedding(takens_vector, 1, 3)
+plot_persistence(Sample, embeddedData, 3)
+# Birth and death Diagrams array(USed for bottleneck distance)
+Hemingway_d = np.array(d)
 
 # f-scott Text
 print("f-scott")
 standardize_text(fscott)
-wourd_count(std_text)
-print(len(std_text))
-y = takensEmbedding(takens_vector, 1, 3)
+word_count(list_1)
+takensEmbedding(takens_vector, 1, 3)
 plot_persistence(fscott, embeddedData, 3)
-d4 = d
+# Birth and death Diagrams array (USed for bottleneck distance)
+fscott_d = np.array(d)
 
 
-# distance_bottleneck, (matching, D) = persim.bottleneck(
-# hemingway, fscott, matching=True)
+########################################################
+########################################################
+############                        ####################
+############    Bottleneck dist     ####################
+############                        ####################
+########################################################
+########################################################
 
-#print(persim.bottleneck(d1, d2))
-'''
+distance_bottleneck = persim.bottleneck(
+    sample_d, DylanThomas_d, matching=False)
+print(
+    f"The Bottleneck Distance between Arianna Grande and Dylan Thomas is: {distance_bottleneck}")
+
+distance_bottleneck = persim.bottleneck(
+    Hemingway_d, DylanThomas_d, matching=False)
+print(
+    f"The Bottleneck Distance between Hemingway and Dylan Thomas is: {distance_bottleneck}")
+
+distance_bottleneck = persim.bottleneck(
+    Hemingway_d, fscott_d, matching=False)
+print(
+    f"The Bottleneck Distance between Hemingway and F. Scott Fitzgerald is: {distance_bottleneck}")
+
+distance_bottleneck = persim.bottleneck(
+    fscott_d, DylanThomas_d, matching=False)
+print(
+    f"The Bottleneck Distance between F. Scott Fitzgerald and Dylan Thomas is: {distance_bottleneck}")
+
+distance_bottleneck = persim.bottleneck(
+    fscott_d, sample_d, matching=False)
+print(
+    f"The Bottleneck Distance between F. Scott Fitzgerald and Arianna Grande is: {distance_bottleneck}")
