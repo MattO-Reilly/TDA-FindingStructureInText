@@ -3,7 +3,7 @@ Project Log
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 
-Finding structure in text using Topological dat analysis.
+Finding structure in text using Topological data analysis.
 
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
@@ -22,8 +22,8 @@ Finding structure in text using Topological dat analysis.
 -----------------------------------------------------------------------
 
 - Defined Word Count Vector and Takens Embedding for sample text files. 
-Embedded word count vectors into 2D and 3D space. Begun Persistent Homology
-of takens embedding and also lloked at bottleneck distance between two 
+Embedded word count vectors into 2D and 3D space. Began Persistent Homology
+of takens embedding and also looked at bottleneck distance between two 
 persistence diagrams.
 
 -Added texts by Thomas, Hemingway and Fitzgerald
@@ -38,7 +38,7 @@ persistence diagrams.
     \  /\  /  __/  __/   <   / /_ 
      \/  \/ \___|\___|_|\_\ |____|
                                   
-                                  
+ Takens and persistence done for Hemingway and Fitzgerald began working with nltk to standardise all text samples                                
 
 ***********************************************************************
 ***********************************************************************
@@ -50,7 +50,8 @@ persistence diagrams.
     \  /\  /  __/  __/   <   ___) |
      \/  \/ \___|\___|_|\_\ |____/ 
                                    
-                                   
+defined funstions for takens, persistence and bottleneck distance.
+Began work on the write up in LateX.
 ***********************************************************************
 ***********************************************************************
 
