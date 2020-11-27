@@ -82,7 +82,6 @@ fscott = a_file.readlines()
 
 
 def standardize_text(text):
-    global list_1
     list_1 = []
     for line in text:
         # result = input_str.translate(string.punctuation)
@@ -94,10 +93,10 @@ def standardize_text(text):
         std_text = lemmatizer.lemmatize(str(std_text))
         list_1.append(std_text)
     print(list_1)
+    return list_1
 
 
 def word_count(std_text):
-    global takens_vector
     appended_data = pd.DataFrame()
     CountVec = CountVectorizer(ngram_range=(0, 1))
     Count_data = CountVec.fit_transform(std_text)
@@ -128,7 +127,6 @@ def takensEmbedding(data, delay, dimension):
 
 
 def plot_persistence(text, embeddedData, dimension):
-    global d
     if dimension == 2:
         # Embedded into 2 Dimensions
         embedding_2d = embeddedData
@@ -152,9 +150,7 @@ def plot_persistence(text, embeddedData, dimension):
         plt.show()
         d = ripser(embedding_3d)['dgms'][0]
         plot_diagrams(d, show=True)
-
-
-np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
+    return d
 
 
 ########################################################
@@ -166,40 +162,42 @@ np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
 ########################################################
 
 
+
 # Sample Text
 print("Sample text")
-standardize_text(Sample)
-word_count(list_1)
-takensEmbedding(takens_vector, 1, 3)
-plot_persistence(Sample, embeddedData, 3)
-sample_d = np.array(d)  # Birth and death array (USed for bottleneck distance)
+list_Sample = standardize_text(Sample)
+vector_Sample = word_count(list_Sample)
+takensEmbedding(vector_Sample, 1, 3)
+dgms_Sample = plot_persistence(Sample, embeddedData, 3)
+# Birth and death array (Used for bottleneck distance)
+sample_d = np.array(dgms_Sample)
 
 # Dylan Thomas
 print("Dylan Thomas")
-standardize_text(DylanThomas)
-word_count(list_1)
-takensEmbedding(takens_vector, 1, 3)
-plot_persistence(Sample, embeddedData, 3)
-# Birth and death array (USed for bottleneck distance)
-DylanThomas_d = np.array(d)
+list_DylanThomas = standardize_text(DylanThomas)
+vector_DylanThomas = word_count(list_DylanThomas)
+takensEmbedding(vector_DylanThomas, 1, 3)
+dgms_DylanThomas = plot_persistence(Sample, embeddedData, 3)
+# Birth and death array (Used for bottleneck distance)
+DylanThomas_d = np.array(dgms_DylanThomas)
 
 # Hemingway Text
 print("Hemingway")
-standardize_text(Hemingway)
-word_count(list_1)
-takensEmbedding(takens_vector, 1, 3)
-plot_persistence(Sample, embeddedData, 3)
-# Birth and death Diagrams array(USed for bottleneck distance)
-Hemingway_d = np.array(d)
+list_Hemingway = standardize_text(Hemingway)
+vector_Hemingway = word_count(list_Hemingway)
+takensEmbedding(vector_Hemingway, 1, 3)
+dgms_Hemingway = plot_persistence(Sample, embeddedData, 3)
+# Birth and death Diagrams array(Used for bottleneck distance)
+Hemingway_d = np.array(dgms_Hemingway)
 
 # f-scott Text
 print("f-scott")
-standardize_text(fscott)
-word_count(list_1)
-takensEmbedding(takens_vector, 1, 3)
-plot_persistence(fscott, embeddedData, 3)
-# Birth and death Diagrams array (USed for bottleneck distance)
-fscott_d = np.array(d)
+list_fscott = standardize_text(fscott)
+vector_fscott = word_count(list_fscott)
+takensEmbedding(vector_fscott, 1, 3)
+dgms_fscott = plot_persistence(fscott, embeddedData, 3)
+# Birth and death Diagrams array (Used for bottleneck distance)
+fscott_d = np.array(dgms_fscott)
 
 
 ########################################################

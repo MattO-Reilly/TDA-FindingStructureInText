@@ -38,7 +38,11 @@ persistence diagrams.
     \  /\  /  __/  __/   <   / /_ 
      \/  \/ \___|\___|_|\_\ |____|
                                   
- Takens and persistence done for Hemingway and Fitzgerald began working with nltk to standardise all text samples                                
+ Takens and persistence done for Hemingway and Fitzgerald 
+
+ Began working with nltk to standardise all text samples
+
+ Calculated bottleneck distance for texts and compared them together.                          
 
 ***********************************************************************
 ***********************************************************************
