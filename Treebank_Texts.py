@@ -29,6 +29,9 @@ import string
 a_file = open(("./texts/sample.txt").lower())  # DylanThomas/sample.txt
 Sample = a_file.readlines()
 
+a_file = open(("./texts/DylanThomas.txt").lower())  # DylanThomas/sample.txt
+DylanThomas = a_file.readlines()
+
 
 def standardize_text(text):
     list_1 = []
@@ -39,18 +42,21 @@ def standardize_text(text):
         lemmatizer = WordNetLemmatizer()
         std_text = lemmatizer.lemmatize(str(words))
         list_1.append(std_text)
-    print(list_1)
     return list_1
 
 
 def POS_tagging(text_string):
-    str1 = ""
-    x = str1.join(text_string)
-    x1 = str(x)
-    text_str_tok = x1.translate(str.maketrans('', '', string.punctuation))
-    tokens = nltk.word_tokenize(text_str_tok)
-    print('Word tags for text:', nltk.pos_tag(tokens, tagset="universal"))
+    for line in text_string:
+        str1 = ""
+        x = str1.join(line)
+        x1 = str(x)
+        text_str_tok = x1.translate(str.maketrans('', '', string.punctuation))
+        tokens = nltk.word_tokenize(text_str_tok)
+        print('Word tags for text:', nltk.pos_tag(tokens, tagset="universal"))
 
 
 x = standardize_text(Sample)
 POS_tagging(x)
+
+#y = standardize_text(DylanThomas)
+# POS_tagging(y)
