@@ -16,7 +16,7 @@ import re
 import nltk
 from nltk.stem import WordNetLemmatizer
 from nltk import sent_tokenize, word_tokenize
-from nltk.corpus import stopwords
+from nltk.corpus import stopwords, webtext
 from nltk.tokenize import RegexpTokenizer
 from collections import Counter
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
@@ -31,8 +31,13 @@ a_file = open(("./texts/sample.txt").lower())  # DylanThomas/sample.txt
 Sample = a_file.readlines()
 
 
-with open("./texts/f-scott.txt") as f:
-    fscott = f.read()
+with open("./texts/DylanThomas.txt") as f:
+    DylanThomas = f.read()
+
+
+# Find List of Books from Project Gutenberg
+nltk.corpus.gutenberg.fileids()
+emma = webtext.raw('austen-emma.txt')
 
 import re
 alphabets = "([A-Za-z])"
@@ -44,7 +49,8 @@ websites = "[.](com|net|org|io|gov)"
 
 
 def split_into_sentences(text):
-    text = " " + text + "  "
+    list_sentences = []
+    text = " " + text + " "
     text = text.replace("\n", " ")
     text = re.sub(prefixes, "\\1<prd>", text)
     text = re.sub(websites, "<prd>\\1", text)
@@ -71,13 +77,15 @@ def split_into_sentences(text):
     text = text.replace("?", "?<stop>")
     text = text.replace("!", "!<stop>")
     text = text.replace("<prd>", ".")
-    sentences = text.split("<stop>")
-    sentences = sentences[:-1]
-    sentences = [s.strip() for s in sentences]
-    return sentences
+    for sentence in text:
+        sentence = text.split("<stop>")
+        sentence = sentence[:-1]
+        sentence = [s.strip() for s in sentence]
+        list_sentences.append(sentence)
+    return list_sentences
 
 
-def standardize_text(text):
+def standardize_text_line(text):
     list_1 = []
     for line in text:
         # result = input_str.translate(string.punctuation)
@@ -99,10 +107,16 @@ def POS_tagging(text_string):
         print('Word tags for text:', nltk.pos_tag(tokens, tagset="universal"))
 
 
-x = standardize_text(Sample)
+x = standardize_text_line(Sample)
 POS_tagging(x)
 
-#y = standardize_text(DylanThomas)
-# POS_tagging(y)
+# DylanThomas_Sentences = split_into_sentences(DylanThomas)
 
-print(split_into_sentences(fscott))
+# for x in DylanThomas_Sentences:
+# POS_tagging(x)
+
+
+Emma_sentences = split_into_sentences(emma)
+
+for sentence in Emma_sentences:
+    POS_tagging(sentence)
