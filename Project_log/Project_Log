@@ -54,7 +54,7 @@ persistence diagrams.
     \  /\  /  __/  __/   <   ___) |
      \/  \/ \___|\___|_|\_\ |____/ 
                                    
-defined funstions for takens, persistence and bottleneck distance.
+defined functions for takens, persistence and bottleneck distance.
 Began work on the write up in LateX.
 ***********************************************************************
 ***********************************************************************

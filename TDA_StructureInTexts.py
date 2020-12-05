@@ -17,26 +17,6 @@ from packages import *
 ########################################################
 
 
-# NLTK for word processing
-
-'''
-def open_file(path):
-    root = ET.fromstring(("./texts/" + str(path)))
-    root = tree.getroot()
-    a_file = open(root).lower()
-    path = a_file.readlines()
-    return path
-
-
-
-def open_file(text_file):
-    data_folder = Path("./texts/")
-    file_to_open = str(data_folder) + str(text_file)
-    root = ET.fromstring(file_to_open)
-    f = open(root).lower()
-    text_file = f_file.readlines()
-'''
-
 a_file = open(("./texts/sample.txt").lower())  # DylanThomas/sample.txt
 Sample = a_file.readlines()
 

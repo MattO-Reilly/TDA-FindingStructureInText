@@ -32,7 +32,6 @@ websites = "[.](com|net|org|io|gov)"
 
 
 def split_into_sentences(text):
-    list_sentences = []
     text = " " + text + " "
     text = text.replace("\n", " ")
     text = re.sub(prefixes, "\\1<prd>", text)
@@ -60,12 +59,8 @@ def split_into_sentences(text):
     text = text.replace("?", "?<stop>")
     text = text.replace("!", "!<stop>")
     text = text.replace("<prd>", ".")
-    for sentence in text:
-        sentence = text.split("<stop>")
-        sentence = sentence[:-1]
-        sentence = [s.strip() for s in sentence]
-        list_sentences.append(sentence)
-    return list_sentences
+    sentences = [sentence[:-1] for sentence in text.split("<stop>")]
+    return sentences
 
 
 def standardize_text_line(text):
@@ -77,30 +72,35 @@ def standardize_text_line(text):
         lemmatizer = WordNetLemmatizer()
         std_text = lemmatizer.lemmatize(str(words))
         list_1.append(std_text)
+    print(list_1)
     return list_1
 
 
 def POS_tagging(text_string):
-    for line in text_string:
-        str1 = ""
-        x = str1.join(line)
-        x1 = str(x)
-        text_str_tok = x1.translate(str.maketrans('', '', string.punctuation))
-        tokens = nltk.word_tokenize(text_str_tok)
-        print('Word tags for text:', nltk.pos_tag(tokens, tagset="universal"))
+    str1 = ""
+    x = str1.join(text_string)
+    x1 = str(x)
+    text_str_tok = x1.translate(str.maketrans('', '', string.punctuation))
+    tokens = nltk.word_tokenize(text_str_tok)
+    print('Word tags for text:', nltk.pos_tag(tokens, tagset="universal"))
 
 
-x = standardize_text_line(Sample)
-POS_tagging(x)
-
-# DylanThomas_Sentences = split_into_sentences(DylanThomas)
-
-# for x in DylanThomas_Sentences:
+#x = standardize_text_line(Sample)
 # POS_tagging(x)
 
+DylanThomas_Sentences = split_into_sentences(DylanThomas)
+# print(DylanThomas_Sentences)
+POS_tagging(DylanThomas_Sentences)
+'''
+for x in DylanThomas_Sentences:
+    POS_tagging(DylanThomas_Sentences)'''
+
+'''
 
 Emma_sentences = split_into_sentences(raw)
 
 for sentence in Emma_sentences:
     POS_tagging(sentence)
     print(sentence)
+
+'''
