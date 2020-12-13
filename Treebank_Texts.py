@@ -82,7 +82,7 @@ def POS_tagging(text_string):
     x1 = str(x)
     text_str_tok = x1.translate(str.maketrans('', '', string.punctuation))
     tokens = nltk.word_tokenize(text_str_tok)
-    print('Word tags for text:', nltk.pos_tag(tokens, tagset="universal"))
+    return nltk.pos_tag(tokens, tagset="universal")
 
 
 #x = standardize_text_line(Sample)
@@ -90,7 +90,7 @@ def POS_tagging(text_string):
 
 DylanThomas_Sentences = split_into_sentences(DylanThomas)
 # print(DylanThomas_Sentences)
-POS_tagging(DylanThomas_Sentences)
+DylanThomas_POS = POS_tagging(DylanThomas_Sentences)
 '''
 for x in DylanThomas_Sentences:
     POS_tagging(DylanThomas_Sentences)'''
@@ -104,3 +104,4 @@ for sentence in Emma_sentences:
     print(sentence)
 
 '''
+print(DylanThomas_POS)
