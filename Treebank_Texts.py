@@ -32,6 +32,8 @@ websites = "[.](com|net|org|io|gov)"
 
 
 def split_into_sentences(text):
+    sentences_list = []
+    text = text.lower()
     text = " " + text + " "
     text = text.replace("\n", " ")
     text = re.sub(prefixes, "\\1<prd>", text)
@@ -59,49 +61,39 @@ def split_into_sentences(text):
     text = text.replace("?", "?<stop>")
     text = text.replace("!", "!<stop>")
     text = text.replace("<prd>", ".")
+    sentences = text.split("<stop>")
     sentences = [sentence[:-1] for sentence in text.split("<stop>")]
-    return sentences
-
-
-def standardize_text_line(text):
-    list_1 = []
-    for line in text:
-        # result = input_str.translate(string.punctuation)
-        words = nltk.word_tokenize(line)
-        words = [word.lower() for word in words if word.isalpha()]
-        lemmatizer = WordNetLemmatizer()
-        std_text = lemmatizer.lemmatize(str(words))
-        list_1.append(std_text)
-    print(list_1)
-    return list_1
+    for i in sentences:
+        i = ''.join(x for x in i if x not in string.punctuation)
+        sentences_list.append([i])
+    return sentences_list
 
 
 def POS_tagging(text_string):
-    str1 = ""
-    x = str1.join(text_string)
-    x1 = str(x)
-    text_str_tok = x1.translate(str.maketrans('', '', string.punctuation))
-    tokens = nltk.word_tokenize(text_str_tok)
-    return nltk.pos_tag(tokens, tagset="universal")
+    list_1 = []
+    for i in text_string:
+        str1 = ""
+        x = str1.join(i)
+        x1 = str(x)
+        text_str_tok = x1.translate(str.maketrans('', '', string.punctuation))
+        tokens = nltk.word_tokenize(text_str_tok)
+        tags = nltk.pos_tag(tokens, tagset="universal")
+        list_1.append(tags)
+    return list_1
 
 
-#x = standardize_text_line(Sample)
-# POS_tagging(x)
+def word_count(std_text):
+    appended_data = pd.DataFrame()
+    CountVec = CountVectorizer(ngram_range=(0, 1))
+    Count_data = CountVec.fit_transform(std_text)
+    cv_dataframe = pd.DataFrame(
+        Count_data.toarray(), columns=CountVec.get_feature_names())
+    takens_vector = np.concatenate(np.array(cv_dataframe, dtype=np.float32))
+    return takens_vector
+
 
 DylanThomas_Sentences = split_into_sentences(DylanThomas)
-# print(DylanThomas_Sentences)
+print(DylanThomas_Sentences)
 DylanThomas_POS = POS_tagging(DylanThomas_Sentences)
-'''
-for x in DylanThomas_Sentences:
-    POS_tagging(DylanThomas_Sentences)'''
-
-'''
-
-Emma_sentences = split_into_sentences(raw)
-
-for sentence in Emma_sentences:
-    POS_tagging(sentence)
-    print(sentence)
-
-'''
-print(DylanThomas_POS)
+word_count(DylanThomas_Sentences)
+print(DylanThomas_POS[0])
