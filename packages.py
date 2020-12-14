@@ -13,7 +13,6 @@ from nltk.corpus import stopwords, webtext
 from nltk.tokenize import RegexpTokenizer
 from collections import Counter
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
-import re
 
 # POS Tagging
 from nltk.corpus import brown
@@ -29,4 +28,3 @@ from ripser import *  # persistent homology package
 from persim import *
 import sklearn
 import persim
-import gudhi
