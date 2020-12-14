@@ -20,20 +20,19 @@
     <a href="#SimplicialComplexs">Simplicial Complexs</a>
     <a href="#BettiNumbers">Betti Numbers</a>
     <a href="#Analysis">Takens Theorem</a>
-    <a href=""><li><h4> Analysing Time Series Data</h4></li>
+    <a href=""><li><h4> Analysing Time Series Data</h4></li></a>
     <a href="#example1"> Example 1:  </a>
     <a href="#example2"> Example 2: </a>
-
     </div>
 
 
 
-<div class="content">
+<div class="content"> <!-- main body of text-->
     <div class="header"> 
         <h1>Topological Data Analysis - Finding Structure In Text.</h1> </div>
 
-    <div class='intro'>
 
+    <div class='intro'>
         <p><b>Introduction:</b> 
         Topological Data Analysis (TDA) is a developing branch of data science which uses statistical learning and techniques from algebraic topology,
             such as persistent homology to study the data. In this project we will be using a range of topological techniques such as persistent homology,
@@ -54,75 +53,63 @@
         <p> A word count vector is a convenient way of converting pieces of text to numerical data which works better when using topological techniques. 
             It works by first finding each unique word in the piece of text and then counting the number of times it occurs in each line of the text.
             This forms a matrix with each line as a row and each unique word as a column. 
-            You can then concatenate the data so that each row gets converted into one long row creating a long vector ready for Takens Embedding. </P>
-        <br>
-
-        <ol>
-            
-
-        </ol></p>
-        <p> </p>
+            You can then concatenate the data so that each row gets converted into one long row creating a long vector ready for Takens Embedding. </p>
         
 
         <h3><u> What is algebraic topology? </u></h3>
         <p>Algebraic topology uses methods from abstract algebra to answer topological questions by mapping spaces to algebraic objects.
             It uses abstract algebraic techniques like groups or rings, as many hole structures can be represented by these,
-            to study objects and their properties that are homoeomorphic ie: invariant under continuous deformation. 
-        <br>
+            to study objects and their properties that are homoeomorphic ie: invariant under continuous deformation. </p>
 
         <ol>
             <li>Homotopy -   Two continuous functions from one topological space to another are called homotopic if one can be "continuously deformed" into the other</li>
             <li>Homology - Is a general way of associating a sequence of algebraic objects such as abelian groups or modules to other mathematical objects such as topological spaces. </li>
             <li>Cohomology - Cohomology can be viewed as a method of assigning richer algebraic invariants to a space than homology. </li>
-            
         </ol>
-        Homotopy, homology, and cohomology groups are the main areas of study in algebraic topology.
-        In a very broad sense they attempt to capture the number of k-dimensional holes in a topological space. </p></div>
+
+        <p> Homotopy, homology, and cohomology groups are the main areas of study in algebraic topology.
+        In a very broad sense they attempt to capture the number of k-dimensional holes in a topological space. </p>
+    </div>
 
         
-             </ol>
-    </div>
+    
     <div id="PersistentHomology" class="PersistentHomology">
         <h3><u>What is persistent homology?</u> </h3>
-        <p> Persistent homology is a method for computing topological features of a space at different spatial resolutions.
-            More persistent features are detected over a wide range of spatial scales and are deemed more likely to represent true features
-            of the underlying space rather than noise or choice of parameters. </p>
+        <p> Persistent homology is a method for computing topological features of a space at different spatial resolutions.More persistent features are detected over a wide range of spatial scales and are deemed more likely to represent true features of the underlying space rather than noise or choice of parameters. </p>
         
 
         
        
-        <p> To find the persistent homology of a space, the space must first be represented as a simplicial complex.
-            A distance function on the underlying space corresponds to a filtration of the simplicial complex, that is a nested sequence of increasing subsets. </p>
+        <p> To find the persistent homology of a space, the space must first be represented as a simplicial complex. A distance function on the underlying space corresponds to a filtration of the simplicial complex, that is a nested sequence of increasing subsets. </p>
     </div>
 
     <div id="SimplicialComplexs" class="SimplicialComplexs">
         <h3><u>Simplicial Complexs</u></h3>
-        <p>Simplicial Complexes are defined as collections of simplices which satisfy the following conditions.
+        <p>Simplicial Complexes are defined as collections of simplices which satisfy the following conditions.</p>
+        <ul>
             <li>The complex must contain every face of any simplex belonging to it.</li>
             <li>Any simplices that overlap do so on a common face</li>
-            <br>
-            These simplicial complexes are often used To Triangulate Topological Spaces that they are Homeomorphic to, 
-            However in Persistent Homology we use a special type called a Vietoris-Rips Complex.
-            In these complexes two vertices x and y in a dataset are only connected by an edge if for an assigned value e the euclidean distance d(x,y) is less than e </p>
+        </ul>
+        <p> These simplicial complexes are often used To Triangulate Topological Spaces that they are Homeomorphic to, However in Persistent Homology we use a special type called a Vietoris-Rips Complex. In these complexes two vertices x and y in a dataset are only connected by an edge if for an assigned value e the euclidean distance d(x,y) is less than epsilon </p>
     </div>
 
 
     <div id="BettiNumbers" class="BettiNumbers">
         <h3> <u>Betti Numbers and Holes</u> </h3>
         <p>A hole in a mathematical object is a topological structure which prevents the object from being continuously shrunk to a point.
-            When dealing with topological spaces, a disconnectivity is interpreted as a hole in the space.
-        <br>
+            When dealing with topological spaces, a disconnectivity is interpreted as a hole in the space.</p>
         <p>In algebraic topology, the Betti numbers are used to distinguish topological spaces based on the connectivity of n-dimensional simplicial complexes.</p>
         <p>Betti number: Bn = dim(ker(dn))-dim(image(dn+1)) </p>
 
-        Informally, the kth Betti number refers to the number of k-dimensional holes on a topological surface. 
-        The first few Betti numbers have the following definitions for 0-dimensional, 1-dimensional, and 2-dimensional simplicial complexes:
+        <p>Informally, the kth Betti number refers to the number of k-dimensional holes on a topological surface. 
+        The first few Betti numbers have the following definitions for 0-dimensional, 1-dimensional, and 2-dimensional simplicial complexes:</p>
 
-        
         <ol>
             <li>b0 is the number of connected components</li>
             <li>b1 is the number of one-dimensional or "circular" holes </li>
             <li>b2 is the number of two-dimensional "voids" or "cavities" </li>
+        </ol>
+    </div>
             
    
     <div class="PersistenceDiagram">
@@ -131,33 +118,22 @@
         
         
        
-        <p>A persistence diagram captures the birth and death of holes. The persistence diagram is very similar to the barcode.
-            The x-coordinate of that point is when that point was born. The y-coordinate is when that feature died. 
-            The distance between the 45 degree line and the point is the duration of the persistence for that feature.
-            Features that were short lived occur close to the 45 degree line, while more persistent features occur at a greater distance from the 45 degree line.  </p>
+        <p>A persistence diagram captures the birth and death of holes. The persistence diagram is very similar to the barcode. The x-coordinate of that point is when that point was born. The y-coordinate is when that feature died. The distance between the 45 degree line and the point is the duration of the persistence for that feature. Features that were short lived occur close to the 45 degree line, while more persistent features occur at a greater distance from the 45 degree line.  </p>
 
 
-        <h3><u>Takens' Theorem:</u></h3>
         <div class="Takens">
-        <p><u><b>Takens' Theorem:</b></u>
-        <br> Let \(M\) be a compact \(C^2\) differentiable manifold of dimension \(m\).
-        Let \(\Phi: M \rightarrow M\) be a \(C^2\)  diffeomorphism and let \(\mu: M \rightarrow \mathbb{R}\) be any \(C^2\) map. It is a generic property that the mapping 
-        \begin{equation}
-        \Phi_{\phi, \mu}: M \rightarrow \mathbb{R}^{2 m+1}, x \mapsto\left(\mu(x), \mu \phi(x), \mu \phi^{2}(x), \ldots, \mu \phi^{2 m}(x)\right)
-        \end{equation}
-        is an embedding.</p></div>
+            <p><u><b>Takens' Theorem:</b></u>
+            Let \(M\) be a compact \(C^2\) differentiable manifold of dimension \(m\).
+            Let \(\Phi: M \rightarrow M\) be a \(C^2\)  diffeomorphism and let \(\mu: M \rightarrow \mathbb{R}\) be any \(C^2\) map. It is a generic property that the mapping 
+            \begin{equation}
+            \Phi_{\phi, \mu}: M \rightarrow \mathbb{R}^{2 m+1}, x \mapsto\left(\mu(x), \mu \phi(x), \mu \phi^{2}(x), \ldots, \mu \phi^{2 m}(x)\right)
+            \end{equation}
+            is an embedding.</p>
+        </div>
 
-        <p>Takens’ embedding allows us to convert our vector of data points into a multi-dimensional which can then be analysed and sorted using Persistent Homology.
-            A vector can be reconstructed in phase space where m is the embedding dimension (the smallest dimension required to embed an object) and t is the time delay 
-            meaning how big the gap between consecutive points in your new m-dimensional vectors.
-            Thus, instead of analysing the series along time, we analyse its trajectory as a set of visited states in an m-dimensional Euclidean space. #
-            This is particularly useful to extract the topological behaviour we are interested in. </p>
+        <p>Takens’ embedding allows us to convert our vector of data points into a multi-dimensional which can then be analysed and sorted using Persistent Homology. A vector can be reconstructed in phase space where m is the embedding dimension (the smallest dimension required to embed an object) and t is the time delay meaning how big the gap between consecutive points in your new m-dimensional vectors. Thus, instead of analysing the series along time, we analyse its trajectory as a set of visited states in an m-dimensional Euclidean space. This is particularly useful to extract the topological behaviour we are interested in. </p>
 
-        <p> In the study of dynamical systems, a delay embedding theorem gives the conditions under which a chaotic dynamical system can be reconstructed 
-            from a sequence of observations of the state of a dynamical system. The reconstruction preserves the properties of the dynamical system 
-            that do not change under smooth coordinate changes (i.e., diffeomorphisms), but it does not preserve the geometric shape of structures in phase space. </p>
-
-
+        <p> In the study of dynamical systems, a delay embedding theorem gives the conditions under which a chaotic dynamical system can be reconstructed from a sequence of observations of the state of a dynamical system. The reconstruction preserves the properties of the dynamical system that do not change under smooth coordinate changes (i.e., diffeomorphisms), but it does not preserve the geometric shape of structures in phase space. </p>
     </div>
 
 
@@ -192,3 +168,5 @@
             </code>
         </pre>
         
+</div> <!-- main body of text-->
+</body>
