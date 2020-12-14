@@ -28,3 +28,4 @@ from ripser import *  # persistent homology package
 from persim import *
 import sklearn
 import persim
+#import gudhi
