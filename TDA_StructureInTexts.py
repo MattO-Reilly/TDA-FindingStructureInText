@@ -34,12 +34,15 @@ with open("./texts/DylanThomas.txt") as f:
 list_Sample = standardize_text_sentence(DylanThomas_sentence)
 print(list_Sample)
 x = word_count(list_Sample)
+print(x)
 embeddedData = takensEmbedding(x, 1, 2)
 dgms_Sample = plot_persistence(DylanThomas_sentence, embeddedData, 2)
 
 list_Sample = standardize_text_line(DylanThomas_lines)
 print(list_Sample)
 x = word_count(list_Sample)
+np.set_printoptions(threshold=sys.maxsize)
+print(x)
 embeddedData = takensEmbedding(x, 1, 2)
 dgms_Sample = plot_persistence(DylanThomas_lines, embeddedData, 2)
 
