@@ -125,3 +125,9 @@ def POS_tagging(text_string):
         tags = nltk.pos_tag(tokens, tagset="universal")
         list_1.append(tags)
     return list_1
+
+
+def train_test_split(data, train_size):
+    train = data[:train_size]
+    test = data[train_size:]
+    return train, test

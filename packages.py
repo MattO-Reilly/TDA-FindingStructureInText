@@ -4,6 +4,7 @@ import math  # math fun
 import matplotlib.pyplot as plt  # plotting
 import re
 from urllib import request
+import itertools
 
 # NLP /Text standardization
 import nltk
@@ -14,6 +15,11 @@ from nltk.tokenize import RegexpTokenizer
 from collections import Counter
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
 
+
+#from tensorflow import keras
+#layers = keras.layers
+#models = keras.models
+
 # POS Tagging
 from nltk.corpus import brown
 import nltk.tokenize.treebank
@@ -23,9 +29,10 @@ import string
 # Persistent Homology
 from sklearn.feature_extraction.text import CountVectorizer
 from ripser import *  # persistent homology package
+from gudhi import SimplexTree
 
 # analyzing Persistence Diagrams
 from persim import *
 import sklearn
 import persim
-#import gudhi
+import mogutda
