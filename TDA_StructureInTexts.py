@@ -73,10 +73,9 @@ class DataPreparation:
 
 data_prep = DataPreparation(data)
 cleanse_df = data_prep.preprocess()
-cleanse_df['clean_text']
+#cleanse_df['clean_text']
 
 wordcount_df = []
-print(cleanse_df['clean_text'])
 
 for i in cleanse_df['clean_text']:
     wordcountvec = word_count(i)
