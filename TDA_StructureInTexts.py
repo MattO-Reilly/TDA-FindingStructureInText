@@ -73,9 +73,11 @@ class DataPreparation:
 
 data_prep = DataPreparation(data)
 cleanse_df = data_prep.preprocess()
-#cleanse_df['clean_text']
+# cleanse_df['clean_text']
 
 wordcount_df = []
+
+print(cleanse_df.head())
 
 for i in cleanse_df['clean_text']:
     wordcountvec = word_count(i)
@@ -84,10 +86,8 @@ for i in cleanse_df['clean_text']:
     Persistence_array = np.array(diagrams)
     wordcount_df.append(Persistence_array)
 
-print(wordcount_df[1:5])
-for a, b in itertools.combinations(wordcount_df, 2):
-    distance_bottleneck = persim.bottleneck(
-        a, b, matching=False)
+for a, b in itertools.combinations(cleanse_df['clean_text'], 2):
+    distance_bottleneck = persim.bottleneck(a, b, matching=False)
 '''
 
 with open("./texts/DylanThomas.txt") as f:
