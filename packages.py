@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt  # plotting
 import re
 from urllib import request
 import itertools
+import sys
 
 # NLP /Text standardization
 import nltk
@@ -14,6 +15,7 @@ from nltk.corpus import stopwords, webtext
 from nltk.tokenize import RegexpTokenizer
 from collections import Counter
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
+from sklearn.feature_extraction.text import CountVectorizer
 
 
 #from tensorflow import keras

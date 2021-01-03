@@ -1,138 +1,244 @@
 
-import numpy as np  # linear algebra
-import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
-import math  # math fun
-import matplotlib.pyplot as plt  # plotting
-
-# Persistent Homology
-from sklearn.feature_extraction.text import CountVectorizer
-from ripser import *  # persistent homology package
-# analyzing Persistence Diagrams
-from persim import *
-import sklearn
-import persim
-import gudhi
-
-# NLP /Text standardization
-import nltk
-from nltk import sent_tokenize, word_tokenize
-from nltk.corpus import stopwords
-from nltk.tokenize import RegexpTokenizer
-from collections import Counter
-from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
-
-
-a_file = open(("./texts/sample.txt").lower())  # DylanThomas/sample.txt
-Sample = a_file.readlines()
-
-a_file = open(("./texts/f-scott.txt").lower())  # DylanThomas/sample.txt
-fscott = a_file.readlines()
-
-a_file = open(("./texts/Hemingway.txt").lower())  # DylanThomas/sample.txt
-Hemingway = a_file.readlines()
-
-
-def standardize_text(text):
-    global std_text
-    input_str = str(text)
-    # result = input_str.translate(string.punctuation)
-    words = nltk.word_tokenize(input_str)
-    words = [word.lower() for word in words if word.isalpha()]
-    stop_words = set(stopwords.words("english"))
-    std_text = [i for i in words if not i in stop_words]
-    return std_text
-
-
-def wourd_count(std_text):
-    CountVec = CountVectorizer(ngram_range=(0, 1))
-    Count_data = CountVec.fit_transform(std_text)
-    cv_dataframe = pd.DataFrame(
-        Count_data.toarray(), columns=CountVec.get_feature_names())
-    # Convert Array to single vector.
-    global takens_vector
-    takens_vector = np.concatenate(np.array(cv_dataframe))
-    return takens_vector
-
-
-def takensEmbedding(data, delay, dimension):
-    "This function returns the Takens embedding of data with delay into dimension, delay*dimension must be < len(data)"
-    if delay * dimension > len(data):
-        raise NameError('Delay times dimension exceed length of data!')
-        global embeddedData
-    embeddedData = np.array([data[0:len(data) - delay * dimension]])
-    for i in range(1, dimension):
-        embeddedData = np.append(
-            embeddedData, [data[i * delay:len(data) - delay * (dimension - i)]], axis=0)
-    return embeddedData
-
-
-def plot_embedding(embeddedData, dimension):
-    if dimension == 2:
-        # Embedded into 2 Dimensions
-        global embedding_2d
-        embedding_2d = embeddedData
-        # Plot into 2D
-        fig = plt.figure()
-        # plot the 2D embedding
-        ax = fig.add_subplot(3, 1, dimension)
-        ax.plot(embedding_2d[0, :], embedding_2d[1, :]);
-        plt.show()
-        return embedding_2d
-    if dimension == 3:
-        # Embedded into 3 Dimensions
-        global embedding_3d
-        embedding_3d = embeddedData
-        # Plot into 3D
-        fig = plt.figure()
-        # plot the 3D embedding
-        ax = fig.add_subplot(3, 1, 3, projection='3d')
-        ax.plot(embedding_3d[0, :],
-                embedding_3d[1, :], embedding_3d[2, :]);
-        plt.show()
-        return embedding_3d
-
-
 ########################################################
 ########################################################
 ############                        ####################
-############  Persistent Homology   ####################
+############       PACKAGES         ####################
 ############                        ####################
 ########################################################
 ########################################################
 
-def plot_persistence_diagram(embedding_dim):
-    global d
-    if embedding_dim == 2:
-        d = ripser(embedding_2d)['dgms']
-        plot_diagrams(diagrams, show=True)
-    if embedding_dim == 3:
-        d = ripser(embedding_3d)['dgms']
-        plot_diagrams(diagrams, show=True)
-    return d
+from packages import *
+from functions import *
+
+########################################################
+########################################################
+############                        ####################
+############       Text File        ####################
+############                        ####################
+########################################################
+########################################################
+
+
+data = pd.read_csv("./data/bbc-text.csv")
+print(f"Shape : {data.shape}, \n\nColumns: {data.columns}, \n\nCategories: {data.category.unique()}")
+data.head().append(data.tail())
+
+
+class DataPreparation:
+    def __init__(self, data, column='text'):
+        self.df = data
+        self.column = column
+
+    def preprocess(self):
+        self.tokenize()
+        self.remove_stopwords()
+        self.remove_non_words()
+        self.lemmatize_words()
+
+        return self.df
+
+    def tokenize(self):
+        self.df['clean_text'] = self.df[self.column].apply(nltk.word_tokenize)
+        print("Tokenization is done.")
+
+    def remove_stopwords(self):
+        stopword_set = set(nltk.corpus.stopwords.words('english'))
+
+        def rem_stopword(words): return [
+            item for item in words if item not in stopword_set]
+
+        self.df['clean_text'] = self.df['clean_text'].apply(rem_stopword)
+        print("Remove stopwords done.")
+
+    def remove_non_words(self):
+        """
+            Remove all non alpha characters from the text data
+            :numbers: 0-9
+            :punctuation: All english punctuations
+            :special characters: All english special characters
+        """
+        regpatrn = '[a-z]+'
+        def rem_special_chars(x): return [
+            item for item in x if re.match(regpatrn, item)]
+        self.df['clean_text'] = self.df['clean_text'].apply(rem_special_chars)
+        print("Removed non english characters is done.")
+
+    def lemmatize_words(self):
+        lemma = nltk.stem.wordnet.WordNetLemmatizer()
+
+        def on_word_lemma(x): return [lemma.lemmatize(w, pos='v') for w in x]
+
+        self.df['clean_text'] = self.df['clean_text'].apply(on_word_lemma)
+        print("Lemmatization on the words.")
+
+
+data_prep = DataPreparation(data)
+cleanse_df = data_prep.preprocess()
+# cleanse_df['clean_text']
+
+wordcount_df = []
+for i in cleanse_df['clean_text']:
+    wordcountvec = word_count(i)
+    #data = takensEmbedding(wordcountvec, 1, 2)
+    #diagrams = ripser(data)['dgms']
+    #Persistence_array = np.array(diagrams, dtype=object)
+    wordcount_df.append(wordcountvec)
+
+cleanse_df['wordcountvec'] = wordcount_df
+
+
+pd.set_option('display.max_colwidth', None)
+cleanse_df.to_excel(r'./data/text_vectors.xlsx', index=False)
+
+# print(wordcount_df)
+
+# for a, b in itertools.combinations(wordcount_df, 2):
+#distance_bottleneck = persim.bottleneck(a, b, matching=False)
+'''
+
+with open("./texts/DylanThomas.txt") as f:
+    DylanThomas_lines = f.readlines()
+DylanThomas_lines = [x.strip() for x in DylanThomas_lines]
+
+#"./texts/sample.txt"
+#"./texts/DylanThomas.txt"
+#"./texts/Hemingway.txt"
+#"./texts/f-scott.txt"
+
+with open("./texts/DylanThomas.txt") as f:
+    DylanThomas_sentence = f.read()
+
+
+list_Sample = standardize_text_sentence(DylanThomas_sentence)
+print(list_Sample)
+x = word_count(list_Sample)
+print(x)
+embeddedData = takensEmbedding(x, 1, 2)
+dgms_Sample = plot_persistence(DylanThomas_sentence, embeddedData, 2)
+
+list_Sample = standardize_text_line(DylanThomas_lines)
+print(list_Sample)
+x = word_count(list_Sample)
+print(x)
+embeddedData = takensEmbedding(x, 1, 2)
+dgms_Sample = plot_persistence(DylanThomas_lines, embeddedData, 2)
+
 
 
 # Sample Text
 print("Sample text")
-standardize_text(Sample)
-wourd_count(Sample)
-takensEmbedding(takens_vector, 1, 3)
-plot_embedding(embeddedData, 3)
-d1 = ripser(embedding_3d)['dgms'][1]
+list_Sample = standardize_text_line(DylanThomas)
+vector_Sample = word_count(list_Sample)
+x = takensEmbedding(vector_Sample, 1, 2)
+dgms_Sample = plot_persistence(x, embeddedData, 2)
+# Birth and death array (Used for bottleneck distance)
+sample_d = np.array(dgms_Sample)
+
+
+# Dylan Thomas
+print("Dylan Thomas")
+list_DylanThomas = standardize_text(DylanThomas)
+vector_DylanThomas = word_count(list_DylanThomas)
+takensEmbedding(vector_DylanThomas, 1, 2)
+dgms_DylanThomas = plot_persistence(Sample, embeddedData, 2)
+# Birth and death array (Used for bottleneck distance)
+DylanThomas_d = np.array(dgms_DylanThomas)
 
 # Hemingway Text
 print("Hemingway")
-standardize_text(Hemingway)
-wourd_count(Hemingway)
-x = takensEmbedding(takens_vector, 1, 3)
-plot_embedding(embeddedData, 3)
-d1 = ripser(embedding_3d)['dgms'][1]
-print(d1)
+list_Hemingway = standardize_text(Hemingway)
+vector_Hemingway = word_count(list_Hemingway)
+takensEmbedding(vector_Hemingway, 1, 2)
+dgms_Hemingway = plot_persistence(Sample, embeddedData, 2)
+# Birth and death Diagrams array(Used for bottleneck distance)
+Hemingway_d = np.array(dgms_Hemingway)
+
+# f-scott Text
+print("f-scott")
+list_fscott = standardize_text(fscott)
+vector_fscott = word_count(list_fscott)
+takensEmbedding(vector_fscott, 1, 2)
+dgms_fscott = plot_persistence(fscott, embeddedData, 2)
+# Birth and death Diagrams array (Used for bottleneck distance)
+fscott_d = np.array(dgms_fscott)
 
 
-standardize_text(fscott)
-wourd_count(fscott)
-takensEmbedding(takens_vector, 1, 3)
-plot_embedding(embeddedData, 3)
-d2 = ripser(embedding_3d)['dgms'][1]
+########################################################
+########################################################
+############                        ####################
+############    Bottleneck dist     ####################
+############                        ####################
+########################################################
+########################################################
 
-print(persim.bottleneck(d1, d2))
+distance_bottleneck = persim.bottleneck(
+    sample_d, DylanThomas_d, matching=False)
+print(
+    f"The Bottleneck Distance between Arianna Grande and Dylan Thomas is: {distance_bottleneck}")
+
+distance_bottleneck = persim.bottleneck(
+    Hemingway_d, DylanThomas_d, matching=False)
+print(
+    f"The Bottleneck Distance between Hemingway and Dylan Thomas is: {distance_bottleneck}")
+
+distance_bottleneck = persim.bottleneck(
+    Hemingway_d, fscott_d, matching=False)
+print(
+    f"The Bottleneck Distance between Hemingway and F. Scott Fitzgerald is: {distance_bottleneck}")
+
+distance_bottleneck = persim.bottleneck(
+    fscott_d, DylanThomas_d, matching=False)
+print(
+    f"The Bottleneck Distance between F. Scott Fitzgerald and Dylan Thomas is: {distance_bottleneck}")
+
+distance_bottleneck = persim.bottleneck(
+    fscott_d, sample_d, matching=False)
+print(
+    f"The Bottleneck Distance between F. Scott Fitzgerald and Arianna Grande is: {distance_bottleneck}")
+    '''
+
+
+########################################################
+########################################################
+############                        ####################
+############    Treebank            ####################
+############                        ####################
+########################################################
+################################################################################################################
+########################################################
+############                        ####################
+############    Bottleneck dist     ####################
+############                        ####################
+########################################################
+################################################################################################################
+########################################################
+############                        ####################
+############    Bottleneck dist     ####################
+############                        ####################
+########################################################
+########################################################
+
+
+from packages import *
+from functions import *
+
+a_file = open(("./texts/sample.txt").lower())  # DylanThomas/sample.txt
+Sample = a_file.readlines()
+
+
+with open("./texts/DylanThomas.txt") as f:
+    DylanThomas = f.read()
+
+# Crime and Punishment by Fyodor Dostoevsky (Project Gutenberg)
+url = "http://www.gutenberg.org/files/2554/2554-0.txt"
+response = request.urlopen(url)
+raw = response.read().decode('utf8')
+raw.find("PART I")
+raw.rfind("End of Project Gutenberg's Crime")
+raw = raw[5338:5577]
+
+
+DylanThomas_Sentences = standardize_text_sentence(DylanThomas)
+print(DylanThomas_Sentences)
+DylanThomas_POS = POS_tagging(DylanThomas_Sentences)
+print(DylanThomas_POS)

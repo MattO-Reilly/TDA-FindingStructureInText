@@ -76,18 +76,23 @@ cleanse_df = data_prep.preprocess()
 # cleanse_df['clean_text']
 
 wordcount_df = []
-
-print(cleanse_df.head())
-
 for i in cleanse_df['clean_text']:
     wordcountvec = word_count(i)
-    data = takensEmbedding(wordcountvec, 1, 2)
-    diagrams = ripser(data)['dgms']
-    Persistence_array = np.array(diagrams)
-    wordcount_df.append(Persistence_array)
+    #data = takensEmbedding(wordcountvec, 1, 2)
+    #diagrams = ripser(data)['dgms']
+    #Persistence_array = np.array(diagrams, dtype=object)
+    wordcount_df.append(wordcountvec)
 
-for a, b in itertools.combinations(cleanse_df['clean_text'], 2):
-    distance_bottleneck = persim.bottleneck(a, b, matching=False)
+cleanse_df['wordcountvec'] = wordcount_df
+
+
+pd.set_option('display.max_colwidth', None)
+cleanse_df.to_excel(r'./data/text_vectors.xlsx', index=False)
+
+# print(wordcount_df)
+
+# for a, b in itertools.combinations(wordcount_df, 2):
+#distance_bottleneck = persim.bottleneck(a, b, matching=False)
 '''
 
 with open("./texts/DylanThomas.txt") as f:

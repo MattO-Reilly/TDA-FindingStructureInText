@@ -65,7 +65,7 @@ def standardize_text_line(text):
 
 
 def word_count(std_text):
-    print(std_text)
+    np.set_printoptions(threshold=sys.maxsize)
     appended_data = pd.DataFrame()
     CountVec = CountVectorizer(ngram_range=(0, 1))
     Count_data = CountVec.fit_transform(std_text)
