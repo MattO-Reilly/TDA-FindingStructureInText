@@ -94,7 +94,7 @@ cleanse_df_freq['wordfreqvec'] = wordfreq_df
 pd.set_option('display.max_colwidth', None)
 cleanse_df_freq.to_excel(r'./data/freq_vectors.xlsx', index=False)
 
-'''
+
 vectorizerh = HashingVectorizer(n_features=200)
 wordhash_df = []
 for i in cleanse_df_freq['text']:
@@ -112,7 +112,7 @@ pd.set_option('display.max_colwidth', None)
 cleanse_df_freq.to_excel(r'./data/hash_vectors.xlsx', index=False)
 
 
-
+'''
 wordcount_df = []
 for i in cleanse_df_wordcount['text']:
     vector1 = standardize_text_sentence(str(i))
