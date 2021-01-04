@@ -81,9 +81,10 @@ for i in cleanse_df['clean_text']:
     #data = takensEmbedding(wordcountvec, 1, 2)
     #diagrams = ripser(data)['dgms']
     #Persistence_array = np.array(diagrams, dtype=object)
-    wordcount_df.append(wordcountvec)
+    wordcount_df.append([wordcountvec])
 
 cleanse_df['wordcountvec'] = wordcount_df
+#cleanse_df = cleanse_df.astype(str)
 
 
 pd.set_option('display.max_colwidth', None)

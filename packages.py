@@ -16,7 +16,8 @@ from nltk.tokenize import RegexpTokenizer
 from collections import Counter
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
 from sklearn.feature_extraction.text import CountVectorizer
-
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import HashingVectorizer
 
 #from tensorflow import keras
 #layers = keras.layers

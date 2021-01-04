@@ -71,7 +71,7 @@ def word_count(std_text):
     Count_data = CountVec.fit_transform(std_text)
     cv_dataframe = pd.DataFrame(
         Count_data.toarray(), columns=CountVec.get_feature_names())
-    takens_vector = np.concatenate(np.array(cv_dataframe, dtype=np.float32))
+    takens_vector = np.concatenate(np.array(cv_dataframe, dtype=object))
     return takens_vector
 
 
