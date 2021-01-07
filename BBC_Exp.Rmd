@@ -1,14 +1,13 @@
 ---
-title: "BBC_Text_Exp"
+title: "BBC_exp_tda"
 author: "Matt O'Reilly"
-date: "1/5/2021"
+date: "1/6/2021"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
 
 ```{r}
 library(nonlinearTseries)
@@ -18,78 +17,72 @@ library(dplyr)
 library(readxl)
 library(tm) #NLP
 library(profvis)
+library(superml) #Word count vectors
+library(TDAmapper)
 ```
 
 
 ###Word Count Vectors
 ```{r}
-text_data <- read_excel("./data/wordcount_vectors.xlsx")
-text_vector_data <- text_data %>% select(wordcountvec)
-#names <- text_data %>% select(category)
+text_data <- read_excel("./data/freq_vectors.xlsx")
+#text_vector_data <- text_data %>% select(wordfreqvec)
+head(text_data)
 ```
 
+
 ```{r}
-wordvec_list <- c()
-for (i in 1:nrow(text_vector_data)){
-  text_vector_data[i,] <- removePunctuation(as.character(text_vector_data[i,]))
-  x <- as.list(text_vector_data[i,])
-  wordvec_list <- c(wordvec_list, x)
+bettiNum_list <- list()
+tfv <- TfIdfVectorizer$new(max_features = 10, remove_stopwords = TRUE)
+for (i in 1:nrow(text_data)){
+article <- removeNumbers(as.character(text_data['text'][i,])) #Remove numbers from articles
+article_lines <- as.list(strsplit(article, "[.]")) #Split article into sentences
+for (i in article_lines){
+  cf_mat1 <- tfv$fit_transform(i)
 }
+hom <- calculate_homology(cf_mat1, return_df = TRUE)
+bettinum <- sum((hom[, "death"] - hom[, "birth"] > 0.06) & hom[, "dimension"] == 1) 
+bettiNum_list <- append(bettiNum_list, bettinum)
+}
+bettiNum_list
+kmeans(bettiNum_list, 5, nstart = 5 ,iter.max = 15)
 
-wordvec_df <- as.data.frame(wordvec_list)
-wordvec_dfc <- as.character(wordvec_df)
-wordvec_lst <- strsplit(wordvec_dfc, " ")    # Use " " if the values are separated by spaces
-wordvec_lst <-sapply(wordvec_lst, as.integer)
-size <- max(sapply(wordvec_lst, length))
-wordvec_df <- data.frame(sapply(wordvec_lst, function(x) c(x, rep(NA, size - length(x)))))
-#wordvec_df 
+
 ```
 
 ```{r}
-profvis({
-betti_num_list <- list()
-#for (i in 1:ncol(wordvec_df)){
-vec <- zoo::na.trim(wordvec_df[,1], is.na = "all") #Removes NA's from bottom of vector
-text_vector_matrix <- data.matrix(vec)
-tak <- buildTakens(text_vector_matrix,2,3)
-hom <- calculate_homology(tak,return_df = TRUE) 
-hom <- hom %>%
-  mutate(persistence = death-birth) %>%
-  mutate(persistent = ifelse(persistence > 0.1, 1,0))
-hom_matrix <- tibble(hom) %>% select(dimension, persistent)
-betti_num <- sum(hom$persistent == 1 & hom$dimension == 1)
-betti_num_list <- append(betti_num_list, betti_num)
+cfv <- CountVectorizer$new(max_features = 10, remove_stopwords = TRUE)
+article <- removeNumbers(as.character(text_data['text'][1,]))
+article_lines <- as.list(strsplit(article, "[.]"))
+for (i in article_lines){
+  cf_mat1 <- cfv$fit_transform(i)
+}
+#er <- buildTakens(cf_mat1,3,3)
+cf_mat1
+calculate_homology(cf_mat1)
+#for (i in text_data['clean_text']){
+#cf_mat <- cfv$fit_transform(article_lines)
+#cf_mat
+#x <- buildTakens(cf_mat,2,3)
+#plot(x)
+#y <- calculate_homology(x, return_df = FALSE)
+#plot_barcode(y)
+
 #}
-})
 ```
-
-```{r}
-betti_num_list <- list()
-vec <- zoo::na.trim(wordvec_df[,1], is.na = "all") #Removes NA's from bottom of vector
-text_vector_matrix <- data.matrix(vec)
-tak <- buildTakens(text_vector_matrix,2,3)
-hom <- calculate_homology(tak, dim = 1 ,return_df = FALSE) 
-hom <- hom %>%
-  mutate(persistence = death-birth) %>%
-  mutate(persistent = ifelse(persistence > 0.1, 1,0))
-hom_matrix <- tibble(hom) %>% select(dimension, persistent)
-betti_num <- sum(hom$persistent == 1 & hom$dimension == 1)
-betti_num_list <- append(betti_num_list, betti_num)
-
-```
-
-```{r}
-#vec <- zoo::na.trim(wordvec_df[,i], is.na = "all")
-bettinum <- function(vec, embedding.dim=2, time.lag=3) {
-    hom <- calculate_homology(buildTakens(vec, embedding.dim, time.lag))
-    sum((hom[, "death"] - hom[, "birth"] > 0.1) & hom[, "dimension"] == 1) 
+tech {
+1 : 7 holes
 }
-betti_num_list <- list()
-vec <- zoo::na.trim(wordvec_df[,1], is.na = "all")
-class(vec)
-article_bettinum <- function(vec)
-betti_num_list <- append(betti_num_list, article_bettinum)
-betti_num_list
-```
-
-
+business{
+2 : 9 holes
+}
+sport{
+3 : 3 holes
+4 : 9 holes
+}
+entertainment{
+5 : 3 holes
+}
+politics{
+6 : 14 holes
+7 : 6 holes
+}
