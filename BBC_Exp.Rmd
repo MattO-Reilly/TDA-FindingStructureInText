@@ -17,6 +17,7 @@ library(tidyverse)
 library(dplyr)
 library(readxl)
 library(tm) #NLP
+library(profvis)
 ```
 
 
@@ -43,3 +44,52 @@ size <- max(sapply(wordvec_lst, length))
 wordvec_df <- data.frame(sapply(wordvec_lst, function(x) c(x, rep(NA, size - length(x)))))
 #wordvec_df 
 ```
+
+```{r}
+profvis({
+betti_num_list <- list()
+#for (i in 1:ncol(wordvec_df)){
+vec <- zoo::na.trim(wordvec_df[,1], is.na = "all") #Removes NA's from bottom of vector
+text_vector_matrix <- data.matrix(vec)
+tak <- buildTakens(text_vector_matrix,2,3)
+hom <- calculate_homology(tak,return_df = TRUE) 
+hom <- hom %>%
+  mutate(persistence = death-birth) %>%
+  mutate(persistent = ifelse(persistence > 0.1, 1,0))
+hom_matrix <- tibble(hom) %>% select(dimension, persistent)
+betti_num <- sum(hom$persistent == 1 & hom$dimension == 1)
+betti_num_list <- append(betti_num_list, betti_num)
+#}
+})
+```
+
+```{r}
+betti_num_list <- list()
+vec <- zoo::na.trim(wordvec_df[,1], is.na = "all") #Removes NA's from bottom of vector
+text_vector_matrix <- data.matrix(vec)
+tak <- buildTakens(text_vector_matrix,2,3)
+hom <- calculate_homology(tak, dim = 1 ,return_df = FALSE) 
+hom <- hom %>%
+  mutate(persistence = death-birth) %>%
+  mutate(persistent = ifelse(persistence > 0.1, 1,0))
+hom_matrix <- tibble(hom) %>% select(dimension, persistent)
+betti_num <- sum(hom$persistent == 1 & hom$dimension == 1)
+betti_num_list <- append(betti_num_list, betti_num)
+
+```
+
+```{r}
+#vec <- zoo::na.trim(wordvec_df[,i], is.na = "all")
+bettinum <- function(vec, embedding.dim=2, time.lag=3) {
+    hom <- calculate_homology(buildTakens(vec, embedding.dim, time.lag))
+    sum((hom[, "death"] - hom[, "birth"] > 0.1) & hom[, "dimension"] == 1) 
+}
+betti_num_list <- list()
+vec <- zoo::na.trim(wordvec_df[,1], is.na = "all")
+class(vec)
+article_bettinum <- function(vec)
+betti_num_list <- append(betti_num_list, article_bettinum)
+betti_num_list
+```
+
+
