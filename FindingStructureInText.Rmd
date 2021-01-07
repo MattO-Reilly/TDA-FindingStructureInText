@@ -23,6 +23,7 @@ library(tm) #NLP
 ```{r}
 text_data <- read_excel("./data/wordcount_vectors.xlsx")
 text_vector_data <- text_data %>% select(wordcountvec)
+#names <- text_data %>% select(category)
 ```
 
 ```{r}
@@ -34,52 +35,129 @@ for (i in 1:nrow(text_vector_data)){
 }
 
 wordvec_df <- as.data.frame(wordvec_list)
-dd <- data.frame(matrix(ncol = 2225, nrow = 1106))
-for (i in 1:1105){ #Change range depending on size of c
-  c <- as.numeric(strsplit(as.character(wordvec_df[i]), "")[[1]])
-  dd[i] <- c[[i]]
+wordvec_dfc <- as.character(wordvec_df)
+wordvec_lst <- strsplit(wordvec_dfc, " ")    # Use " " if the values are separated by spaces
+wordvec_lst <-sapply(wordvec_lst, as.integer)
+size <- max(sapply(wordvec_lst, length))
+wordvec_df <- data.frame(sapply(wordvec_lst, function(x) c(x, rep(NA, size - length(x)))))
+#wordvec_df 
+```
+
+```{r}
+betti_num_list <- list()
+for (i in 1:ncol(wordvec_df)){
+vec <- zoo::na.trim(wordvec_df[,i], is.na = "all") #Removes NA's from bottom of vector
+text_vector_matrix <- data.matrix(vec)
+tak <- buildTakens(text_vector_matrix,2,3)
+hom <- calculate_homology(tak,return_df = TRUE) 
+hom <- hom %>%
+  mutate(persistence = death-birth) %>%
+  mutate(persistent = ifelse(persistence > 0.1, 1,0))
+hom_matrix <- tibble(hom) %>% select(dimension, persistent)
+betti_num <- sum(hom$persistent == 1 & hom$dimension == 1)
+betti_num_list <- append(betti_num_list, betti_num)
 }
-word_vec_df <- Filter(function(x)!all(is.na(x)), dd)
-row.names(word_vec_df)<- NULL ; colnames(word_vec_df)<- NULL
-word_vec_df <- t(word_vec_df)
 ```
 
 
+##TDA - Word Count Vectors
 
 ```{r}
-#Tech / Col 1
-text_vector_matrix <- data.matrix(word_vec_df[,1])
+#Tech / Col 1 / 4 1 dim holes iff persis == 1
+vec1 <- zoo::na.trim(wordvec_df[,1], is.na = "all") #Removes NA's from bottom of vector
+text_vector_matrix <- data.matrix(vec1)
 tak <- buildTakens(text_vector_matrix,2,3)
-plot(tak)
 hom <- calculate_homology(tak,return_df = TRUE) 
 hom_matrix <- calculate_homology(tak,return_df = FALSE) 
 bar <- plot_barcode(hom_matrix)
 hom <- hom %>%
   mutate(persistence = death-birth) %>%
-  mutate(persistent = ifelse(persistence > 0.1, 1,0))
+  mutate(persistent = ifelse(persistence > 0.4, 1,0))
 hom_matrix <- tibble(hom) %>% select(dimension, persistent)
+hom
 hom_matrix <- tibble(hom_matrix) 
 p1 <- hom_matrix[hom_matrix$persistent == '1',] 
-text_homology<-rbind.data.frame(text_homology,p1)
-bar
+betti_num <- sum(hom_matrix$persistent == 1 & hom_matrix$dimension == 1)
 ```
+
 ```{r}
-#business / Col 2
-text_vector_matrix <- data.matrix(word_vec_df[,2])
+#business / Col 2 / 2 1 dim holes iff persis == 1
+vec2 <- zoo::na.trim(wordvec_df[,2], is.na = "all") #Removes NA's from bottom of vector 
+text_vector_matrix <- data.matrix(vec2)
 tak <- buildTakens(text_vector_matrix,2,3)
-plot(tak)
 hom <- calculate_homology(tak,return_df = TRUE) 
 hom_matrix <- calculate_homology(tak,return_df = FALSE) 
 bar <- plot_barcode(hom_matrix)
 hom <- hom %>%
   mutate(persistence = death-birth) %>%
-  mutate(persistent = ifelse(persistence > 0.1, 1,0))
+  mutate(persistent = ifelse(persistence > 0.4, 1,0))
 hom_matrix <- tibble(hom) %>% select(dimension, persistent)
+hom
 hom_matrix <- tibble(hom_matrix) 
 p1 <- hom_matrix[hom_matrix$persistent == '1',] 
-text_homology<-rbind.data.frame(text_homology,p1)
+#text_homology<-rbind.data.frame(text_homology,p1)
 bar
 ```
+
+```{r}
+#Sport / Col 3 / 3 1 dim holes iff persis == 1
+vec3 <- zoo::na.trim(wordvec_df[,3], is.na = "all") #Removes NA's from bottom of vector 
+text_vector_matrix <- data.matrix(vec3)
+tak <- buildTakens(text_vector_matrix,2,3)
+hom <- calculate_homology(tak,return_df = TRUE) 
+hom_matrix <- calculate_homology(tak,return_df = FALSE) 
+bar <- plot_barcode(hom_matrix)
+hom <- hom %>%
+  mutate(persistence = death-birth) %>%
+  mutate(persistent = ifelse(persistence > 0.4, 1,0))
+hom_matrix <- tibble(hom) %>% select(dimension, persistent)
+hom
+hom_matrix <- tibble(hom_matrix) 
+p1 <- hom_matrix[hom_matrix$persistent == '1',] 
+#text_homology<-rbind.data.frame(text_homology,p1)
+bar
+```
+```{r}
+#Entertainment / Col 5 / 4 1 dim holes iff persis == 1
+vec5 <- zoo::na.trim(wordvec_df[,5], is.na = "all") #Removes NA's from bottom of vector 
+text_vector_matrix <- data.matrix(vec5)
+tak <- buildTakens(text_vector_matrix,2,3)
+hom <- calculate_homology(tak,return_df = TRUE) 
+hom_matrix <- calculate_homology(tak,return_df = FALSE) 
+bar <- plot_barcode(hom_matrix)
+hom <- hom %>%
+  mutate(persistence = death-birth) %>%
+  mutate(persistent = ifelse(persistence > 0.4, 1,0))
+hom_matrix <- tibble(hom) %>% select(dimension, persistent)
+hom
+hom_matrix <- tibble(hom_matrix) 
+p1 <- hom_matrix[hom_matrix$persistent == '1',] 
+p1
+#text_homology<-rbind.data.frame(text_homology,p1)
+bar
+```
+
+```{r}
+#Politics / Col 19 / 5 1 dim holes iff persis == 1
+vec19 <- zoo::na.trim(wordvec_df[,19], is.na = "all") #Removes NA's from bottom of vector 
+text_vector_matrix <- data.matrix(vec19)
+tak <- buildTakens(text_vector_matrix,2,3)
+hom <- calculate_homology(tak,return_df = TRUE) 
+hom_matrix <- calculate_homology(tak,return_df = FALSE) 
+bar <- plot_barcode(hom_matrix)
+hom <- hom %>%
+  mutate(persistence = death-birth) %>%
+  mutate(persistent = ifelse(persistence > 0.4, 1,0))
+hom_matrix <- tibble(hom) %>% select(dimension, persistent)
+hom_matrix <- tibble(hom_matrix) 
+hom
+p1 <- hom_matrix[hom_matrix$persistent == '1',] 
+p1
+#text_homology<-rbind.data.frame(text_homology,p1)
+bar
+```
+
+
 ###Word Frequencies with Tfidf Vectors
 ```{r}
 text_data <- read_excel("./data/freq_vectors.xlsx")
@@ -87,23 +165,27 @@ text_vector_data <- text_data %>% select(wordfreqvec)
 ```
 
 ```{r}
-wordvec_list <- c()
+wordfreq_list <- c()
 for (i in 1:nrow(text_vector_data)){
   x <- as.list(text_vector_data[i,])
-  wordvec_list <- c(wordvec_list, x)
+  wordfreq_list <- c(wordfreq_list, x)
 }
 
-wordvec_df <- as.data.frame(wordvec_list)
-dd <- data.frame(matrix(ncol = 2225, nrow = 1106))
-for (i in wordvec_list){ #Change range depending on size of c
-  print(i)
-  #c <- as.numeric(strsplit(as.character(wordvec_df[i]), "")[[1]])
-  #dd[i] <- c[[i]]
-}
-word_vec_df <- Filter(function(x)!all(is.na(x)), dd)
-row.names(word_vec_df)<- NULL ; colnames(word_vec_df)<- NULL
-word_vec_df <- t(word_vec_df)
+wordfreq_df <- as.data.frame(wordfreq_list)
+wordfreq_dfc <- as.character(wordfreq_df)
+wordfreq_dfc <- gsub("\\[|\\]", "", wordfreq_dfc)
+wordfreq_lst <- strsplit(wordfreq_dfc, ", ")    # Use " " if the values are separated by spaces
+wordfreq_lst <-sapply(wordfreq_lst, as.integer)
+size <- max(sapply(wordfreq_lst, length))
+wordfreq_df <- data.frame(sapply(wordfreq_lst, function(x) c(x, rep(NA, size - length(x)))))
+wordfreq_df
+
+
+
+
+
 ```
+
 
 ```{r}
 tech <- data.frame()

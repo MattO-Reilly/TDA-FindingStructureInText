@@ -1,0 +1,45 @@
+---
+title: "BBC_Text_Exp"
+author: "Matt O'Reilly"
+date: "1/5/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(nonlinearTseries)
+library(TDAstats)
+library(tidyverse)
+library(dplyr)
+library(readxl)
+library(tm) #NLP
+```
+
+
+###Word Count Vectors
+```{r}
+text_data <- read_excel("./data/wordcount_vectors.xlsx")
+text_vector_data <- text_data %>% select(wordcountvec)
+#names <- text_data %>% select(category)
+```
+
+```{r}
+wordvec_list <- c()
+for (i in 1:nrow(text_vector_data)){
+  text_vector_data[i,] <- removePunctuation(as.character(text_vector_data[i,]))
+  x <- as.list(text_vector_data[i,])
+  wordvec_list <- c(wordvec_list, x)
+}
+
+wordvec_df <- as.data.frame(wordvec_list)
+wordvec_dfc <- as.character(wordvec_df)
+wordvec_lst <- strsplit(wordvec_dfc, " ")    # Use " " if the values are separated by spaces
+wordvec_lst <-sapply(wordvec_lst, as.integer)
+size <- max(sapply(wordvec_lst, length))
+wordvec_df <- data.frame(sapply(wordvec_lst, function(x) c(x, rep(NA, size - length(x)))))
+#wordvec_df 
+```

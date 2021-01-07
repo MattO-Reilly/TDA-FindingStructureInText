@@ -1,0 +1,88 @@
+---
+title: "BBC_exp_tda"
+author: "Matt O'Reilly"
+date: "1/6/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(nonlinearTseries)
+library(TDAstats)
+library(tidyverse)
+library(dplyr)
+library(readxl)
+library(tm) #NLP
+library(profvis)
+library(superml) #Word count vectors
+library(TDAmapper)
+```
+
+
+###Word Count Vectors
+```{r}
+text_data <- read_excel("./data/freq_vectors.xlsx")
+#text_vector_data <- text_data %>% select(wordfreqvec)
+head(text_data)
+```
+
+
+```{r}
+bettiNum_list <- list()
+tfv <- TfIdfVectorizer$new(max_features = 10, remove_stopwords = FALSE)
+for (i in 1:nrow(text_data)){
+article <- removeNumbers(as.character(text_data['text'][i,]))
+article_lines <- as.list(strsplit(article, "[.]"))
+for (i in article_lines){
+  cf_mat1 <- tfv$fit_transform(i)
+}
+hom <- calculate_homology(cf_mat1, return_df = TRUE)
+bettinum <- sum((hom[, "death"] - hom[, "birth"] > 0.06) & hom[, "dimension"] == 1) 
+bettiNum_list <- append(bettiNum_list, bettinum)
+}
+
+kmeans(bettiNum_list, 5, nstart = 5 ,iter.max = 15)
+
+
+```
+
+```{r}
+cfv <- CountVectorizer$new(max_features = 10, remove_stopwords = TRUE)
+article <- removeNumbers(as.character(text_data['text'][1,]))
+article_lines <- as.list(strsplit(article, "[.]"))
+for (i in article_lines){
+  cf_mat1 <- cfv$fit_transform(i)
+}
+#er <- buildTakens(cf_mat1,3,3)
+cf_mat1
+calculate_homology(cf_mat1)
+#for (i in text_data['clean_text']){
+#cf_mat <- cfv$fit_transform(article_lines)
+#cf_mat
+#x <- buildTakens(cf_mat,2,3)
+#plot(x)
+#y <- calculate_homology(x, return_df = FALSE)
+#plot_barcode(y)
+
+#}
+```
+tech {
+1 : 7 holes
+}
+business{
+2 : 9 holes
+}
+sport{
+3 : 3 holes
+4 : 9 holes
+}
+entertainment{
+5 : 3 holes
+}
+politics{
+6 : 14 holes
+7 : 6 holes
+}

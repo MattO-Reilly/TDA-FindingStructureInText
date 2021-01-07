@@ -60,14 +60,15 @@ vectorizer = CountVectorizer()
 data_prep = DataPreparation(data)
 
 print("Word Count Vector")
-cleanse_df_wordcount = data_prep.preprocess()
+#cleanse_df_wordcount = data_prep.preprocess()
 print("\n")
 print("Frequency Count Vector")
 cleanse_df_freq = data_prep.preprocess()
 print("\n")
 print("Hashing Vector")
-cleanse_df_hash = data_prep.preprocess()
+#cleanse_df_hash = data_prep.preprocess()
 print("\n")
+'''
 wordcount_df = []
 for i in cleanse_df_wordcount['text']:
     vector1 = standardize_text_sentence(str(i))
@@ -78,7 +79,7 @@ cleanse_df_wordcount['wordcountvec'] = wordcount_df
 pd.set_option('display.max_colwidth', None)
 cleanse_df_wordcount.to_excel(r'./data/wordcount_vectors.xlsx', index=False)
 
-
+'''
 wordfreq_df = []
 for i in cleanse_df_freq['text']:
     vector1 = standardize_text_sentence(str(i))
@@ -87,14 +88,14 @@ for i in cleanse_df_freq['text']:
     Count_data = CountVecf.fit_transform(vector1)
     cv_dataframe = pd.DataFrame(
         Count_data.toarray(), columns=CountVecf.get_feature_names())
-    vector = np.concatenate(np.array(cv_dataframe, dtype=object))
-    wordfreq_df.append(list(vector))
+    matrix = (np.array(cv_dataframe, dtype=object))
+    wordfreq_df.append(list(matrix))
 
 cleanse_df_freq['wordfreqvec'] = wordfreq_df
 pd.set_option('display.max_colwidth', None)
 cleanse_df_freq.to_excel(r'./data/freq_vectors.xlsx', index=False)
 
-
+'''
 vectorizerh = HashingVectorizer(n_features=200)
 wordhash_df = []
 for i in cleanse_df_freq['text']:
@@ -112,7 +113,7 @@ pd.set_option('display.max_colwidth', None)
 cleanse_df_freq.to_excel(r'./data/hash_vectors.xlsx', index=False)
 
 
-'''
+
 wordcount_df = []
 for i in cleanse_df_wordcount['text']:
     vector1 = standardize_text_sentence(str(i))
