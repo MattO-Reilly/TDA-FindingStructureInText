@@ -16,10 +16,11 @@ library(tidyverse)
 library(dplyr)
 library(readxl)
 library(tm) #NLP
+library(profvis)
 ```
 
 
-###Word Count Vectors
+###Word Freq Vectors
 ```{r}
 text_data <- read_excel("./data/wordcount_vectors.xlsx")
 text_vector_data <- text_data %>% select(wordcountvec)
@@ -44,6 +45,7 @@ wordvec_df <- data.frame(sapply(wordvec_lst, function(x) c(x, rep(NA, size - len
 ```
 
 ```{r}
+profvis({
 betti_num_list <- list()
 for (i in 1:ncol(wordvec_df)){
 vec <- zoo::na.trim(wordvec_df[,i], is.na = "all") #Removes NA's from bottom of vector
@@ -56,7 +58,7 @@ hom <- hom %>%
 hom_matrix <- tibble(hom) %>% select(dimension, persistent)
 betti_num <- sum(hom$persistent == 1 & hom$dimension == 1)
 betti_num_list <- append(betti_num_list, betti_num)
-}
+}})
 ```
 
 
@@ -78,6 +80,7 @@ hom
 hom_matrix <- tibble(hom_matrix) 
 p1 <- hom_matrix[hom_matrix$persistent == '1',] 
 betti_num <- sum(hom_matrix$persistent == 1 & hom_matrix$dimension == 1)
+bar
 ```
 
 ```{r}

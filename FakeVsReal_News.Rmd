@@ -1,0 +1,99 @@
+---
+title: "FakevsReal_News"
+author: "Matt O'Reilly"
+date: "1/8/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(nonlinearTseries) #BuildTakens
+library(TDAstats) #Calculate homology
+library(tidyverse) 
+library(dplyr)
+library(readxl) #Read in data
+library(tm) #NLP
+library(superml) #Word count vectors
+library(TDAmapper) #Mapper algorithm
+```
+
+
+###Load in Real and Fake news data
+```{r}
+Real_news_data <- read_excel("./data/True.xlsx")
+#text_vector_data <- text_data %>% select(wordfreqvec)
+Real_news_data <- Real_news_data[1:200,1:4]
+head(Real_news_data)
+
+Fake_news_data <- read_excel("./data/Fake.xlsx")
+#text_vector_data <- text_data %>% select(wordfreqvec)
+Fake_news_data <- Fake_news_data[1:200,1:4]
+head(Fake_news_data)
+```
+
+###Calculate BettiNumbers for Fake news
+```{r}
+Fake_bettiNum_list <- list()
+tfv <- TfIdfVectorizer$new(max_features = 20, remove_stopwords = TRUE)
+
+for (i in 1:nrow(Fake_news_data)){
+article <- removeNumbers(as.character(Fake_news_data['text'][i,])) #Remove numbers from articles
+article_lines <- as.list(strsplit(article, "[.]")) #Split article into sentences
+for (i in article_lines){
+  cf_mat1 <- tfv$fit_transform(i)
+}
+hom <- calculate_homology(cf_mat1, return_df = TRUE)
+bettinum <- sum((hom[, "death"] - hom[, "birth"] > 0.01) & hom[, "dimension"] == 1) 
+Fake_bettiNum_list <- append(Fake_bettiNum_list, bettinum)
+}
+Fake_news_data$Betti_Num <- Fake_bettiNum_list
+Fake_news_data$ID <- rep('Fake', 200)
+```
+
+
+###Calculate BettiNumbers for Real news
+```{r}
+Real_bettiNum_list <- list()
+tfv <- TfIdfVectorizer$new(max_features = 20, remove_stopwords = TRUE)
+
+for (i in 1:nrow(Real_news_data)){
+article <- removeNumbers(as.character(Real_news_data['text'][i,])) #Remove numbers from articles
+article_lines <- as.list(strsplit(article, "[.]")) #Split article into sentences
+for (i in article_lines){
+  cf_mat1 <- tfv$fit_transform(i)
+}
+hom <- calculate_homology(cf_mat1, return_df = TRUE)
+bettinum <- sum((hom[, "death"] - hom[, "birth"] > 0.01) & hom[, "dimension"] == 1) 
+Real_bettiNum_list <- append(Real_bettiNum_list, bettinum)
+}
+Real_news_data$Betti_Num <- Real_bettiNum_list
+Real_news_data$ID <- rep('Real', 200)
+```
+
+
+```{r}
+Average_Real_bettinum <- mean(as.numeric(Real_news_data$Betti_Num))
+Average_Real_bettinum #1.405
+
+Average_Fake_bettinum <- mean(as.numeric(Fake_news_data$Betti_Num))
+Average_Fake_bettinum #0.33
+
+Total_news_data <- rbind(Real_news_data,Fake_news_data)
+```
+
+```{r}
+BettiNum_Category <- list()
+x <- 1.405 - 0.33 #1.075
+
+for (i in 1:nrow(Total_news_data)){
+  classification <- as.list(ifelse(Total_news_data$Betti_Num >= 0.5375, 'Real', 'Fake'))
+}
+Total_news_data$classification <- classification
+
+sum(ifelse(Total_news_data$ID == Total_news_data$classification, 1, 0)) #Num of correctly classified news articles.
+```
+
+

@@ -91,7 +91,7 @@ for i in cleanse_df_freq['text']:
     matrix = (np.array(cv_dataframe, dtype=object))
     wordfreq_df.append(list(matrix))
 
-cleanse_df_freq['wordfreqvec'] = wordfreq_df
+#cleanse_df_freq['wordfreqvec'] = wordfreq_df
 pd.set_option('display.max_colwidth', None)
 cleanse_df_freq.to_excel(r'./data/freq_vectors.xlsx', index=False)
 
