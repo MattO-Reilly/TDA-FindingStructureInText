@@ -82,6 +82,7 @@ Average_Fake_bettinum <- mean(as.numeric(Fake_news_data$Betti_Num))
 Average_Fake_bettinum #0.33
 
 Total_news_data <- rbind(Real_news_data,Fake_news_data)
+
 ```
 
 ```{r}
