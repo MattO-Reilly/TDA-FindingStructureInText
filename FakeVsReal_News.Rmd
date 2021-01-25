@@ -37,7 +37,7 @@ head(Fake_news_data)
 ###Calculate BettiNumbers for Fake news
 ```{r}
 Fake_bettiNum_list <- list()
-tfv <- TfIdfVectorizer$new(max_features = 20, remove_stopwords = TRUE)
+tfv <- TfIdfVectorizer$new(max_features = 20, remove_stopwords = FALSE)
 
 for (i in 1:nrow(Fake_news_data)){
 article <- removeNumbers(as.character(Fake_news_data['text'][i,])) #Remove numbers from articles
@@ -57,7 +57,7 @@ Fake_news_data$ID <- rep('Fake', 200)
 ###Calculate BettiNumbers for Real news
 ```{r}
 Real_bettiNum_list <- list()
-tfv <- TfIdfVectorizer$new(max_features = 20, remove_stopwords = TRUE)
+tfv <- TfIdfVectorizer$new(max_features = 20, remove_stopwords = FALSE)
 
 for (i in 1:nrow(Real_news_data)){
 article <- removeNumbers(as.character(Real_news_data['text'][i,])) #Remove numbers from articles
@@ -87,14 +87,15 @@ Total_news_data <- rbind(Real_news_data,Fake_news_data)
 
 ```{r}
 BettiNum_Category <- list()
-x <- 1.405 - 0.33 #1.075
 
 for (i in 1:nrow(Total_news_data)){
-  classification <- as.list(ifelse(Total_news_data$Betti_Num >= 0.5375, 'Real', 'Fake'))
+  classification <- as.list(ifelse(Total_news_data$Betti_Num >= 5, 'Real', 'Fake'))
 }
 Total_news_data$classification <- classification
 
 sum(ifelse(Total_news_data$ID == Total_news_data$classification, 1, 0)) #Num of correctly classified news articles.
+
+248/400
 ```
 
 
