@@ -15,7 +15,7 @@ class DataPreparation:
     def preprocess(self):
         self.tokenize()
         self.remove_stopwords()
-        # self.remove_non_words()
+        self.remove_non_words()
         self.lemmatize_words()
 
         return self.df
