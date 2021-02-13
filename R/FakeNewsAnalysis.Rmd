@@ -1,0 +1,151 @@
+---
+title: "FakeNewsAnalysis"
+author: "Matt O'Reilly"
+date: "2/12/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+# Import libraries
+library(plyr) #  for pre-processing 
+library(tidyverse) # for pre-processing and visualisation
+library(readxl)
+
+#Natural Language Processing
+library(superml)
+library(tokenizers) #tokenize_sentences function
+library(qdap)#rm_stopwords function
+library(tm) #NLP
+library(textstem) #Text Lemmatizer
+
+library(TDAstats)
+```
+
+```{r}
+buzzfeed_real <- read_excel('../data/Buzzfeed/BuzzFeed_real_news_content.xlsx', col_types = "text")
+buzzfeed_fake <- read_excel('../data/Buzzfeed/BuzzFeed_fake_news_content.xlsx', col_types = "text")
+read_lines(buzzfeed_real$text[5])
+```
+
+
+```{r}
+# merge data frames and delete old data frames 
+buzzfeed_df = rbind(buzzfeed_real, buzzfeed_fake)
+
+# adding new column of type for categorising document as real or fake 
+buzzfeed_df$type <- sapply(strsplit(buzzfeed_df$id, "_"), head,  1)
+```
+
+```{r}
+# check the dimensions of the datset
+dim(buzzfeed_df)
+
+# check the summary of dataset
+summary(buzzfeed_df)
+```
+
+```{r}
+# select necessary columns from the dataframe for analysis
+buzzfeed_df <- buzzfeed_df[c("id","title","text","type")]
+```
+
+```{r}
+clean_text <- function(x){ 
+  gsub("…|⋆|–|‹|”|“|‘|’", " ", x) 
+}
+
+preprocess_corpus <- function(corpus){
+  # Convert the text to lower case
+  corpus <- tm_map(corpus, content_transformer(tolower))
+  # Remove numbers
+  corpus <- tm_map(corpus, removeNumbers)
+  # Remove punctuations
+  # corpus <- tm_map(corpus, removePunctuation)
+  # Remove special characters from text
+  corpus <- tm_map(corpus, clean_text)
+  # Remove english common stopwords
+  corpus <- tm_map(corpus, removeWords, stopwords("english"))
+  # Remove name of newspapers from the corpus
+  corpus <- tm_map(corpus, removeWords, c("eagle rising","freedom daily"))
+  # 'stem' words to root words
+  corpus <- tm_map(corpus,stemDocument)
+  # Eliminate extra white spaces
+  corpus <- tm_map(corpus, stripWhitespace)
+  article_df <- data.frame(text_processed=sapply(corpus, identity), 
+    stringsAsFactors=F)
+  return (article_df)
+}
+```
+
+
+###Article Title Analysis
+```{r}
+buzzfeed_df$text[5]
+buzzfeed_df <- buzzfeed_df[-c(96, 124), ]  #Remove error articles 
+#lemmatize_strings(buzzfeed_df$text)
+article_corpus <- Corpus(VectorSource(buzzfeed_df$text))
+# convert title corpus to document term matrix
+article_corpus <- preprocess_corpus(article_corpus)
+#article_corpus$text_processed[1]
+article_df <- data.frame(text_processed=sapply(article_corpus, identity), 
+    stringsAsFactors=F)
+
+article_df$text <- read_lines(article_df$text_processed, lowercase = TRUE, strip_punct = TRUE, simplify = FALSE)
+
+buzzfeed_df$text <- tokenize_sentences(buzzfeed_df$text, lowercase = TRUE, strip_punct = TRUE, simplify = FALSE)
+
+#buzzfeed_df <- cbind(buzzfeed_df,article_corpus)
+#buzzfeed_df$text_processed <- tokenize_sentences(as.String(buzzfeed_df$text_processed))
+```
+
+
+###TDA on Article texts
+
+```{r warning=FALSE}
+tfv <- TfIdfVectorizer$new(max_features = 15, remove_stopwords = TRUE)
+wfv <- CountVectorizer$new(max_features = 15, remove_stopwords = TRUE)
+bettiNum_list <- list()
+for (i in 1:nrow(article_df)){
+  article <- unlist(article_df$text_processed[i], use.names=FALSE)
+  article <- clean_text(article)
+  article <-lemmatize_strings(article)
+  cf_mat1 <- tfv$fit_transform(article)
+  hom <- calculate_homology(cf_mat1, return_df = FALSE)
+  plot_barcode(hom)
+  bettinum <- sum((hom[, "death"] - hom[, "birth"] > 0.05) & hom[, "dimension"] == 1) 
+  bettiNum_list <- append(bettiNum_list, bettinum)
+}
+buzzfeed_df$Betti_Num <- bettiNum_list
+#Fake_news_data$ID <- rep('Fake', num_articles)
+
+```
+
+```{r}
+Real_articles <- buzzfeed_df[1:91,]
+tail(Real_articles)
+Fake_articles <- buzzfeed_df[91:180,]
+tail(Fake_articles)
+
+Average_Real_bettinum <- mean(as.numeric(Real_articles$Betti_Num))
+Average_Real_bettinum #5.7
+
+Average_Fake_bettinum <- mean(as.numeric(Fake_articles$Betti_Num))
+Average_Fake_bettinum #3.1
+```
+
+```{r}
+
+for (i in 1:nrow(buzzfeed_df)){
+  classification <- as.list(ifelse(buzzfeed_df$Betti_Num >=7, 'Real', 'Fake'))
+}
+buzzfeed_df$classification <- classification
+correct <- sum(ifelse(buzzfeed_df$type == buzzfeed_df$classification, 1, 0)) #Num of correctly classified news articles.
+correct/count(buzzfeed_df)*100
+```
+
+

@@ -1,0 +1,101 @@
+---
+title: "TextSimilarity"
+author: "Matt O'Reilly"
+date: "1/24/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(nonlinearTseries) #BuildTakens
+library(TDAstats) #Calculate homology
+library(tidyverse) 
+library(dplyr)
+library(readxl) #Read in data
+library(tm) #NLP
+library(superml) #Word count vectors
+library(TDAmapper) #Mapper algorithm
+```
+
+###Load in Real and Fake news data
+```{r}
+dickens <- read_file("./data/dickens/98-0.txt")
+dickens1 <- read_file("./data/dickens/564-0.txt")
+dickens2 <- read_file("./data/dickens/644-0.txt")
+dickens3 <- read_file("./data/dickens/650-0.txt")
+
+
+
+#text_vector_data <- text_data %>% select(wordfreqvec)
+#head(dickens)
+
+#Fake_news_data <- read_excel("./data/FakeRealNews/Fake.xlsx")
+#text_vector_data <- text_data %>% select(wordfreqvec)
+#Fake_news_data <- Fake_news_data[1:200,1:4]
+#head(Fake_news_data)
+```
+
+
+###Calculate BettiNumbers for Fake news
+```{r}
+Fake_bettiNum_list <- list()
+tfv <- TfIdfVectorizer$new(max_features = 20, remove_stopwords = FALSE)
+
+
+article <- removeNumbers(as.character(dickens)) #Remove numbers from articles
+article_lines <- as.list(strsplit(article, "[.]")) #Split article into sentences
+for (i in article_lines){
+  cf_mat1 <- tfv$fit_transform(i)
+}
+hom <- calculate_homology(cf_mat1, return_df = TRUE)
+bettinum <- sum((hom[, "death"] - hom[, "birth"] > 0.1) & hom[, "dimension"] == 1) 
+bettinum
+```
+
+###Calculate BettiNumbers for Fake news
+```{r}
+Fake_bettiNum_list <- list()
+tfv <- TfIdfVectorizer$new(max_features = 20, remove_stopwords = FALSE)
+
+
+article <- removeNumbers(as.character(dickens1)) #Remove numbers from articles
+article_lines <- as.list(strsplit(article, "[.]")) #Split article into sentences
+for (i in article_lines){
+  cf_mat1 <- tfv$fit_transform(i)
+}
+hom <- calculate_homology(cf_mat1, return_df = TRUE)
+bettinum1 <- sum((hom[, "death"] - hom[, "birth"] > 0.1) & hom[, "dimension"] == 1) 
+bettinum1
+```
+```{r}
+Fake_bettiNum_list <- list()
+tfv <- TfIdfVectorizer$new(max_features = 20, remove_stopwords = FALSE)
+
+
+article <- removeNumbers(as.character(dickens2)) #Remove numbers from articles
+article_lines <- as.list(strsplit(article, "[.]")) #Split article into sentences
+for (i in article_lines){
+  cf_mat1 <- tfv$fit_transform(i)
+}
+hom <- calculate_homology(cf_mat1, return_df = TRUE)
+bettinum1 <- sum((hom[, "death"] - hom[, "birth"] > 0.1) & hom[, "dimension"] == 1) 
+bettinum1
+```
+```{r}
+Fake_bettiNum_list <- list()
+tfv <- TfIdfVectorizer$new(max_features = 20, remove_stopwords = FALSE)
+
+
+article <- removeNumbers(as.character(dickens3)) #Remove numbers from articles
+article_lines <- as.list(strsplit(article, "[.]")) #Split article into sentences
+for (i in article_lines){
+  cf_mat1 <- tfv$fit_transform(i)
+}
+hom <- calculate_homology(cf_mat1, return_df = TRUE)
+bettinum1 <- sum((hom[, "death"] - hom[, "birth"] > 0.1) & hom[, "dimension"] == 1) 
+bettinum1
+```
+

@@ -1,0 +1,164 @@
+---
+title: "BBC_exp_tda"
+author: "Matt O'Reilly"
+date: "1/6/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#Data Manipulation and Read_excel
+library(tidyverse) 
+library(dplyr)
+library(readxl)
+
+library(superml) #Word count vectors
+library(TDAmapper) #Mapper algorithm
+library(TDAstats) #Calculate homology
+library(igraph) #Plotting mapper
+
+#Natural Language Processing
+library(tokenizers) #tokenize_sentences
+#library(qdap)
+library(tm) #NLP
+library(textstem) #Text Lemmatizer
+```
+
+
+###Word Freq Vectors
+```{r}
+num_articles = 400 #Pick how many articles are used
+
+text_data <- read_excel("../data/freq_vectors.xlsx", col_types = 'text', .name_repair = "minimal")
+text_data <- text_data[1:num_articles,]
+transform(text_data, text = as.list(text))
+#text_data$text <- tm_map(toString(text_data$text), lemmatize_strings)
+text_data$text <- tokenize_sentences(text_data$text, lowercase = TRUE, strip_punct = FALSE, simplify = FALSE)
+
+
+#text_data <- lemmatize_words(text_data)
+
+text_data_tech <- text_data %>% filter(text_data['category'] == 'tech')
+text_data_tech
+
+text_data_business <- text_data %>% filter(text_data['category'] == 'business')
+text_data_business
+
+text_data_sport <- text_data %>% filter(text_data['category'] == 'sport')
+text_data_sport
+
+text_data_entertainment <- text_data %>% filter(text_data['category'] == 'entertainment')
+text_data_entertainment
+
+text_data_politics <- text_data %>% filter(text_data['category'] == 'politics')
+text_data_politics
+
+```
+```{r}
+tfv <- TfIdfVectorizer$new(max_features = 15, remove_stopwords = TRUE)
+
+#Average betti numbers for Tech articles
+string = ""
+text_data_tech_articles <- paste(text_data_tech['text'], string, sep=" ")
+
+article <- lemmatize_strings(removeNumbers(as.character(text_data_tech_articles))) #Remove numbers from articles
+article_lines <- as.list(strsplit(article, "[.]")) #Split article into sentences
+for (i in article_lines){
+  cf_mat1 <- tfv$fit_transform(i)
+}
+hom <- calculate_homology(cf_mat1, return_df = TRUE)
+bettinum <- sum((hom[, "death"] - hom[, "birth"] > 0.01) & hom[, "dimension"] == 1) 
+tech_average_bettinum <- bettinum/count(text_data_tech)
+tech_average_bettinum
+
+
+#Average betti numbers for Business articles
+string = ""
+text_data_business_articles <- paste(text_data_business['text'], string, sep=" ")
+
+article <- lemmatize_strings(removeNumbers(as.character(text_data_business_articles))) #Remove numbers from articles
+article_lines <- as.list(strsplit(article, "[.]")) #Split article into sentences
+for (i in article_lines){
+  cf_mat1 <- tfv$fit_transform(i)
+}
+hom <- calculate_homology(cf_mat1, return_df = TRUE)
+bettinum <- sum((hom[, "death"] - hom[, "birth"] > 0.01) & hom[, "dimension"] == 1) 
+business_average_bettinum <- bettinum/count(text_data_business)
+business_average_bettinum
+
+
+#Average betti numbers for Sport articles
+string = ""
+text_data_sport_articles <- paste(text_data_sport['text'], string, sep=" ")
+
+article <- lemmatize_strings(removeNumbers(as.character(text_data_sport_articles))) #Remove numbers from articles
+article_lines <- as.list(strsplit(article, "[.]")) #Split article into sentences
+for (i in article_lines){
+  cf_mat1 <- tfv$fit_transform(i)
+}
+hom <- calculate_homology(cf_mat1, return_df = TRUE)
+bettinum <- sum((hom[, "death"] - hom[, "birth"] > 0.01) & hom[, "dimension"] == 1) 
+sport_average_bettinum <- bettinum/count(text_data_sport)
+sport_average_bettinum
+
+
+#Average betti numbers for Entertainment articles
+string = ""
+text_data_entertainment_articles <- paste(text_data_entertainment['text'], string, sep=" ")
+
+article <- lemmatize_strings(removeNumbers(as.character(text_data_entertainment_articles))) #Remove numbers from articles
+article_lines <- as.list(strsplit(article, "[.]")) #Split article into sentences
+for (i in article_lines){
+  cf_mat1 <- tfv$fit_transform(i)
+}
+hom <- calculate_homology(cf_mat1, return_df = TRUE)
+bettinum <- sum((hom[, "death"] - hom[, "birth"] > 0.01) & hom[, "dimension"] == 1) 
+entertainment_average_bettinum <- bettinum/count(text_data_entertainment)
+entertainment_average_bettinum
+
+
+#Average betti numbers for Politics articles
+string = ""
+text_data_politics_articles <- paste(text_data_politics['text'], string, sep=" ")
+
+article <- lemmatize_strings(removeNumbers(as.character(text_data_politics_articles))) #Remove numbers from articles
+article_lines <- as.list(strsplit(article, "[.]")) #Split article into sentences
+for (i in article_lines){
+  cf_mat1 <- tfv$fit_transform(i)
+}
+hom <- calculate_homology(cf_mat1, return_df = TRUE)
+bettinum <- sum((hom[, "death"] - hom[, "birth"] > 0.01) & hom[, "dimension"] == 1) 
+politics_average_bettinum <- bettinum/count(text_data_politics)
+politics_average_bettinum
+```
+Tech - 8.79
+Business - 6.8
+Sport - 6
+Entertainment - 6.5
+Politics - 8.3
+
+features = 30
+
+```{r}
+bettiNum_list <- list()
+tfv <- TfIdfVectorizer$new(max_features = 15, remove_stopwords = TRUE)
+#gsub("\t", "", text_data$text)
+#gsub("\n", "", text_data$text)
+
+for (i in 1:nrow(text_data)){
+article <- lemmatize_strings(removeNumbers(as.character(text_data['text'][i,]))) #Remove numbers from articles
+article_lines <- as.list(strsplit(article, "[.]")) #Split article into sentences
+for (i in article_lines){
+  cf_mat1 <- tfv$fit_transform(i)
+}
+hom <- calculate_homology(cf_mat1, return_df = TRUE)
+bettinum <- sum((hom[, "death"] - hom[, "birth"] > 0.001) & hom[, "dimension"] == 1) 
+bettiNum_list <- append(bettiNum_list, bettinum)
+}
+
+kmeans(bettiNum_list, 5, nstart = 5 ,iter.max = 15)
+
+```
