@@ -30,7 +30,7 @@ library(textstem) #Text Lemmatizer
 
 ###Word Freq Vectors
 ```{r}
-num_articles = 400 #Pick how many articles are used
+num_articles = 100 #Pick how many articles are used
 
 text_data <- read_excel("../data/freq_vectors.xlsx", col_types = 'text', .name_repair = "minimal")
 text_data <- text_data[1:num_articles,]

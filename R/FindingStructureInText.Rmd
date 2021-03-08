@@ -9,276 +9,131 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
 ```{r}
-library(nonlinearTseries)
-library(TDAstats)
-library(tidyverse)
-library(dplyr)
+# Import libraries
+library(plyr) #  for pre-processing 
+library(tidyverse) # for pre-processing and visualisation
 library(readxl)
-library(tm) #NLP
-library(profvis)
-```
-
-
-###Word Freq Vectors
-```{r}
-text_data <- read_excel("./data/wordcount_vectors.xlsx")
-text_vector_data <- text_data %>% select(wordcountvec)
-#names <- text_data %>% select(category)
-```
-
-```{r}
-wordvec_list <- c()
-for (i in 1:nrow(text_vector_data)){
-  text_vector_data[i,] <- removePunctuation(as.character(text_vector_data[i,]))
-  x <- as.list(text_vector_data[i,])
-  wordvec_list <- c(wordvec_list, x)
-}
-
-wordvec_df <- as.data.frame(wordvec_list)
-wordvec_dfc <- as.character(wordvec_df)
-wordvec_lst <- strsplit(wordvec_dfc, " ")    # Use " " if the values are separated by spaces
-wordvec_lst <-sapply(wordvec_lst, as.integer)
-size <- max(sapply(wordvec_lst, length))
-wordvec_df <- data.frame(sapply(wordvec_lst, function(x) c(x, rep(NA, size - length(x)))))
-#wordvec_df 
-```
-
-```{r}
-profvis({
-betti_num_list <- list()
-for (i in 1:ncol(wordvec_df)){
-vec <- zoo::na.trim(wordvec_df[,i], is.na = "all") #Removes NA's from bottom of vector
-text_vector_matrix <- data.matrix(vec)
-tak <- buildTakens(text_vector_matrix,2,3)
-hom <- calculate_homology(tak,return_df = TRUE) 
-hom <- hom %>%
-  mutate(persistence = death-birth) %>%
-  mutate(persistent = ifelse(persistence > 0.1, 1,0))
-hom_matrix <- tibble(hom) %>% select(dimension, persistent)
-betti_num <- sum(hom$persistent == 1 & hom$dimension == 1)
-betti_num_list <- append(betti_num_list, betti_num)
-}})
-```
-
-
-##TDA - Word Count Vectors
-
-```{r}
-#Tech / Col 1 / 4 1 dim holes iff persis == 1
-vec1 <- zoo::na.trim(wordvec_df[,1], is.na = "all") #Removes NA's from bottom of vector
-text_vector_matrix <- data.matrix(vec1)
-tak <- buildTakens(text_vector_matrix,2,3)
-hom <- calculate_homology(tak,return_df = TRUE) 
-hom_matrix <- calculate_homology(tak,return_df = FALSE) 
-bar <- plot_barcode(hom_matrix)
-hom <- hom %>%
-  mutate(persistence = death-birth) %>%
-  mutate(persistent = ifelse(persistence > 0.4, 1,0))
-hom_matrix <- tibble(hom) %>% select(dimension, persistent)
-hom
-hom_matrix <- tibble(hom_matrix) 
-p1 <- hom_matrix[hom_matrix$persistent == '1',] 
-betti_num <- sum(hom_matrix$persistent == 1 & hom_matrix$dimension == 1)
-bar
-```
-
-```{r}
-#business / Col 2 / 2 1 dim holes iff persis == 1
-vec2 <- zoo::na.trim(wordvec_df[,2], is.na = "all") #Removes NA's from bottom of vector 
-text_vector_matrix <- data.matrix(vec2)
-tak <- buildTakens(text_vector_matrix,2,3)
-hom <- calculate_homology(tak,return_df = TRUE) 
-hom_matrix <- calculate_homology(tak,return_df = FALSE) 
-bar <- plot_barcode(hom_matrix)
-hom <- hom %>%
-  mutate(persistence = death-birth) %>%
-  mutate(persistent = ifelse(persistence > 0.4, 1,0))
-hom_matrix <- tibble(hom) %>% select(dimension, persistent)
-hom
-hom_matrix <- tibble(hom_matrix) 
-p1 <- hom_matrix[hom_matrix$persistent == '1',] 
-#text_homology<-rbind.data.frame(text_homology,p1)
-bar
-```
-
-```{r}
-#Sport / Col 3 / 3 1 dim holes iff persis == 1
-vec3 <- zoo::na.trim(wordvec_df[,3], is.na = "all") #Removes NA's from bottom of vector 
-text_vector_matrix <- data.matrix(vec3)
-tak <- buildTakens(text_vector_matrix,2,3)
-hom <- calculate_homology(tak,return_df = TRUE) 
-hom_matrix <- calculate_homology(tak,return_df = FALSE) 
-bar <- plot_barcode(hom_matrix)
-hom <- hom %>%
-  mutate(persistence = death-birth) %>%
-  mutate(persistent = ifelse(persistence > 0.4, 1,0))
-hom_matrix <- tibble(hom) %>% select(dimension, persistent)
-hom
-hom_matrix <- tibble(hom_matrix) 
-p1 <- hom_matrix[hom_matrix$persistent == '1',] 
-#text_homology<-rbind.data.frame(text_homology,p1)
-bar
-```
-```{r}
-#Entertainment / Col 5 / 4 1 dim holes iff persis == 1
-vec5 <- zoo::na.trim(wordvec_df[,5], is.na = "all") #Removes NA's from bottom of vector 
-text_vector_matrix <- data.matrix(vec5)
-tak <- buildTakens(text_vector_matrix,2,3)
-hom <- calculate_homology(tak,return_df = TRUE) 
-hom_matrix <- calculate_homology(tak,return_df = FALSE) 
-bar <- plot_barcode(hom_matrix)
-hom <- hom %>%
-  mutate(persistence = death-birth) %>%
-  mutate(persistent = ifelse(persistence > 0.4, 1,0))
-hom_matrix <- tibble(hom) %>% select(dimension, persistent)
-hom
-hom_matrix <- tibble(hom_matrix) 
-p1 <- hom_matrix[hom_matrix$persistent == '1',] 
-p1
-#text_homology<-rbind.data.frame(text_homology,p1)
-bar
-```
-
-```{r}
-#Politics / Col 19 / 5 1 dim holes iff persis == 1
-vec19 <- zoo::na.trim(wordvec_df[,19], is.na = "all") #Removes NA's from bottom of vector 
-text_vector_matrix <- data.matrix(vec19)
-tak <- buildTakens(text_vector_matrix,2,3)
-hom <- calculate_homology(tak,return_df = TRUE) 
-hom_matrix <- calculate_homology(tak,return_df = FALSE) 
-bar <- plot_barcode(hom_matrix)
-hom <- hom %>%
-  mutate(persistence = death-birth) %>%
-  mutate(persistent = ifelse(persistence > 0.4, 1,0))
-hom_matrix <- tibble(hom) %>% select(dimension, persistent)
-hom_matrix <- tibble(hom_matrix) 
-hom
-p1 <- hom_matrix[hom_matrix$persistent == '1',] 
-p1
-#text_homology<-rbind.data.frame(text_homology,p1)
-bar
-```
-
-
-###Word Frequencies with Tfidf Vectors
-```{r}
-text_data <- read_excel("./data/freq_vectors.xlsx")
-text_vector_data <- text_data %>% select(wordfreqvec)
-```
-
-```{r}
-wordfreq_list <- c()
-for (i in 1:nrow(text_vector_data)){
-  x <- as.list(text_vector_data[i,])
-  wordfreq_list <- c(wordfreq_list, x)
-}
-
-wordfreq_df <- as.data.frame(wordfreq_list)
-wordfreq_dfc <- as.character(wordfreq_df)
-wordfreq_dfc <- gsub("\\[|\\]", "", wordfreq_dfc)
-wordfreq_lst <- strsplit(wordfreq_dfc, ", ")    # Use " " if the values are separated by spaces
-wordfreq_lst <-sapply(wordfreq_lst, as.integer)
-size <- max(sapply(wordfreq_lst, length))
-wordfreq_df <- data.frame(sapply(wordfreq_lst, function(x) c(x, rep(NA, size - length(x)))))
-wordfreq_df
-
-
-
-
-
-```
-
-
-```{r}
-tech <- data.frame()
-business <- data.frame()
-sport <- data.frame()
-entertainment <- data.frame()
-politics <- data.frame()
-text_homology <- data.frame()
-
-#length(text_data['wordcountvec']
-for (i in 1:ncol(word_vec_df)){
-text_vector_matrix <- data.matrix(word_vec_df[,i])
-tak <- buildTakens(text_vector_matrix,2,3)
-#plot(tak)
-hom <- calculate_homology(tak,return_df = TRUE) 
-hom_matrix <- calculate_homology(tak,return_df = FALSE) 
-bar <- plot_barcode(hom_matrix)
-hom <- hom %>%
-  mutate(persistence = death-birth) %>%
-  mutate(persistent = ifelse(persistence > 0.1, 1,0))
-hom_matrix <- tibble(hom) %>% select(dimension, persistent)
-hom_matrix <- tibble(hom_matrix) 
-p1 <- hom_matrix[hom_matrix$persistent == '1',] 
-text_homology<-rbind.data.frame(text_homology,p1)
-print(bar)
-}
-
-```
-
-
-
-
-```{r}
-#Data Manipulation and Read_excel
-library(tidyverse) 
-library(dplyr)
-library(readxl)
-
-library(superml) #Word count vectors
-library(TDAmapper) #Mapper algorithm
-library(TDAstats) #Calculate homology
-library(igraph) #Plotting mapper
 
 #Natural Language Processing
-library(tokenizers) #tokenize_sentences
-#library(qdap)
+library(superml)
+library(tokenizers) #tokenize_sentences function
+library(qdap)#rm_stopwords function
 library(tm) #NLP
 library(textstem) #Text Lemmatizer
-library(openNLP)
+
+library(TDAstats)
+library(nonlinearTseries)
 ```
 
-###Load in Real and Fake news data
 ```{r}
-num_articles = 400 #Pick how many fake and real articles are used
+num_articles = 100
+text_data <- read_excel("../data/freq_vectors.xlsx", col_types = 'text', .name_repair = "minimal")
+text_data <- text_data[1:num_articles,]
+```
 
-Real_news_data <- read_excel("../data/FakeRealNews/True.xlsx", col_types = "text", .name_repair = "minimal")
-Real_news_data <- Real_news_data[1:num_articles,1:4]
+```{r}
+text_data_tech <- text_data[text_data$category == 'tech', ]
+text_data_tech
 
-#Text Pre-processing
-review_corpus <- Corpus(VectorSource(Real_news_data$text))
-review_corpus = tm_map(review_corpus, content_transformer(tolower))
-#review_corpus = tm_map(review_corpus, removeNumbers)
-#review_corpus = tm_map(review_corpus, removePunctuation)
-review_corpus = tm_map(review_corpus, removeWords, c("the", "and", stopwords("english")))
-#review_corpus =  tm_map(review_corpus, stripWhitespace)
-Real_news_data$text <- review_corpus$content
+text_data_business <- text_data[text_data$category == 'business', ]
+text_data_business
 
-tfv <- TfIdfVectorizer$new(max_features = 10, remove_stopwords = FALSE)
-  article <- unlist(review_corpus[["1"]][["content"]])
-  cf_mat1 <- tfv$fit_transform(article)
-  hom <- calculate_homology(cf_mat1, return_df = FALSE)
-  plot_barcode(hom)
+text_data_sport <- text_data[text_data$category == 'sport', ]
+text_data_sport
+
+text_data_entertainment <- text_data[text_data$category == 'entertainment', ]
+text_data_entertainment
+
+text_data_politics <- text_data[text_data$category == 'politics', ]
+text_data_politics
+
+```
+
+```{r}
+clean_text <- function(x){ 
+  gsub("…|⋆|–|‹|”|“|‘|’", " ", x) 
+}
+
+preprocess_corpus <- function(corpus){
+  # Convert the text to lower case
+  corpus <- tm_map(corpus, content_transformer(tolower))
+  # Remove numbers
+  corpus <- tm_map(corpus, removeNumbers)
+  # Remove punctuations
+  corpus <- tm_map(corpus, removePunctuation)
+  # Remove special characters from text
+  corpus <- tm_map(corpus, clean_text)
+  # Remove english common stopwords
+  corpus <- tm_map(corpus, removeWords, stopwords("english"))
+  # Remove name of newspapers from the corpus
+  corpus <- tm_map(corpus, removeWords, c("eagle rising","freedom daily"))
+  # 'stem' words to root words
+  corpus <- tm_map(corpus,stemDocument)
+  # Eliminate extra white spaces
+  corpus <- tm_map(corpus, stripWhitespace)
+  return (corpus)
+}
+```
+
+```{r warning=FALSE}
+article_tech <- preprocess_corpus(Corpus(VectorSource(text_data_tech$text)))
+article_business <- preprocess_corpus(Corpus(VectorSource(text_data_business$text)))
+article_sport <- preprocess_corpus(Corpus(VectorSource(text_data_sport$text)))
+article_entertainment <- preprocess_corpus(Corpus(VectorSource(text_data_entertainment$text)))
+article_politics <- preprocess_corpus(Corpus(VectorSource(text_data_politics$text)))
+```
+
+```{r}
+tech_dtm <- TermDocumentMatrix(article_tech)
+hom_tech <- calculate_homology(as.matrix(tech_dtm), return_df = FALSE)
+plot_barcode(hom_tech)
+tech_dtm <- removeSparseTerms(tech_dtm, 0.99)
+tech_freqwords <- findMostFreqTerms(tech_dtm, n = 100)
+```
+
+```{r}
+business_dtm <- TermDocumentMatrix(article_business)
+business_tech <- calculate_homology(as.matrix(business_dtm), return_df = FALSE)
+plot_barcode(business_tech)
+business_dtm <- removeSparseTerms(business_dtm, 0.99)
+business_freqwords <- findMostFreqTerms(business_dtm, n = 100)
+```
+
+```{r}
+sport_dtm <- TermDocumentMatrix(article_sport)
+sport_tech <- calculate_homology(as.matrix(sport_dtm), return_df = FALSE)
+plot_barcode(sport_tech)
+sport_dtm <- removeSparseTerms(sport_dtm, 0.99)
+sport_freqwords <- findMostFreqTerms(sport_dtm, n = 100)
+```
+
+```{r}
+entertainment_dtm <- TermDocumentMatrix(article_entertainment)
+entertainment_tech <- calculate_homology(as.matrix(entertainment_dtm), return_df = FALSE)
+plot_barcode(entertainment_tech)
+entertainment_dtm <- removeSparseTerms(entertainment_dtm, 0.99)
+entertainment_freqwords <- findMostFreqTerms(entertainment_dtm, n = 100)
+```
+
+```{r}
+politics_dtm <- TermDocumentMatrix(article_politics)
+politics_tech <- calculate_homology(as.matrix(politics_dtm), return_df = FALSE)
+plot_barcode(politics_tech)
+politics_dtm <- removeSparseTerms(politics_dtm, 0.99)
+politics_freqwords <- findMostFreqTerms(politics_dtm, n = 100)
+#findFreqTerms(review_dtm, 10)
 ```
 
 
+```{r warning=FALSE}
+tfv <- TfIdfVectorizer$new(max_features = 200, remove_stopwords = TRUE)
 
+article <- preprocess_corpus(Corpus(VectorSource(text_data$text[1])))
+review_dtm <- DocumentTermMatrix(article)
 
-Fake_news_data <- read_excel("../data/FakeRealNews/Fake.xlsx", col_types = "text", .name_repair = "minimal")
-Fake_news_data <- Fake_news_data[1:num_articles,1:4]
-Fake_news_data$text <- tokenize_sentences(lemmatize_strings(Fake_news_data$text), lowercase = TRUE, strip_punct = TRUE, simplify = FALSE)
-
-
-tfv <- TfIdfVectorizer$new(max_features = 10, remove_stopwords = FALSE)
-  article <- unlist(Fake_news_data$text[1], use.names=FALSE)
-  cf_mat1 <- tfv$fit_transform(article)
-  hom <- calculate_homology(cf_mat1, return_df = FALSE)
-  plot_barcode(hom)
-  
-  article <- unlist(Real_news_data$text[1], use.names=FALSE)
-  cf_mat1 <- tfv$fit_transform(article)
-  hom <- calculate_homology(cf_mat1, return_df = FALSE)
-  plot_barcode(hom)
+data <- as.matrix(inspect(review_dtm))
+calculate_homology(data)
+```
 
