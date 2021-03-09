@@ -17,14 +17,45 @@ library(readxl)
 
 library(superml) #Word count vectors
 library(TDAmapper) #Mapper algorithm
+library(TDA)
 library(TDAstats) #Calculate homology
 library(igraph) #Plotting mapper
 
 #Natural Language Processing
 library(tokenizers) #tokenize_sentences
-#library(qdap)
 library(tm) #NLP
 library(textstem) #Text Lemmatizer
+```
+
+```{r}
+clean_text <- function(x){ 
+  gsub("…|⋆|–|‹|”|“|‘|’", " ", x) 
+}
+
+removeSingle <- function(x) gsub(" . ", " ", x)   
+
+preprocess_corpus <- function(corpus){
+  # Convert the text to lower case
+  corpus <- tm_map(corpus, content_transformer(tolower))
+  # Remove numbers
+  corpus <- tm_map(corpus, removeNumbers)
+  # Remove punctuations
+  corpus <- tm_map(corpus, removePunctuation)
+  # Remove special characters from text
+  corpus <- tm_map(corpus, clean_text)
+  # Remove english common stopwords
+  corpus <- tm_map(corpus, removeWords, stopwords("english"))
+  # Remove name of newspapers from the corpus
+  corpus <- tm_map(corpus, removeWords, c("eagle rising","freedom daily"))
+  # 'stem' words to root words
+  corpus <- tm_map(corpus,stemDocument)
+  # Eliminate extra white spaces
+  corpus <- tm_map(corpus, stripWhitespace)
+  #Remove single letter words
+  corpus <- tm_map(corpus, content_transformer(removeSingle))
+  return (corpus)
+}
+
 ```
 
 ###Load in Real and Fake news data
@@ -34,13 +65,47 @@ num_articles = 400 #Pick how many fake and real articles are used
 
 Real_news_data <- read_excel("../data/FakeRealNews/True.xlsx", col_types = "text", .name_repair = "minimal")
 Real_news_data <- Real_news_data[1:num_articles,1:4]
-Real_news_data$text <- tokenize_sentences(Real_news_data$text, lowercase = TRUE, strip_punct = TRUE, simplify = FALSE)
-class(Real_news_data$text)
+#Real_news_data$text <- tokenize_sentences(Real_news_data$text, lowercase = TRUE, strip_punct = TRUE, simplify = FALSE)
+#class(Real_news_data$text)
 
 Fake_news_data <- read_excel("../data/FakeRealNews/Fake.xlsx", col_types = "text", .name_repair = "minimal")
 Fake_news_data <- Fake_news_data[1:num_articles,1:4]
-Fake_news_data$text <- tokenize_sentences(Fake_news_data$text, lowercase = TRUE, strip_punct = TRUE, simplify = FALSE)
+#Fake_news_data$text <- tokenize_sentences(Fake_news_data$text, lowercase = TRUE, strip_punct = TRUE, simplify = FALSE)
 ```
+
+```{r warning=FALSE}
+article_fake <- preprocess_corpus(Corpus(VectorSource(Fake_news_data$text)))
+article_real <- preprocess_corpus(Corpus(VectorSource(Real_news_data$text)))
+```
+
+```{r}
+fake_tdm <- TermDocumentMatrix(article_fake)
+fake_tdm <- removeSparseTerms(fake_tdm, 0.6)
+fake_barcode <- ripsDiag(as.matrix(fake_tdm), 2, 150, printProgress = FALSE)
+plot(fake_barcode[["diagram"]],barcode = TRUE)
+fake_freqwords <- findMostFreqTerms(fake_tdm, n = 100)
+```
+```{r}
+real_tdm <- TermDocumentMatrix(article_real)
+real_tdm <- removeSparseTerms(real_tdm, 0.6)
+real_barcode <- ripsDiag(as.matrix(real_tdm), 1, 300, printProgress = FALSE)
+plot(real_barcode[["diagram"]],barcode = TRUE)
+real_freqwords <- findMostFreqTerms(real_tdm, n = 100)
+```
+
+```{r}
+article <- as.character(Fake_news_data['text'][5,]) #Remove numbers from articles
+article_lines <- unlist(strsplit(article, "[.]"))#Split article into sentences
+article_lines <- preprocess_corpus(Corpus(VectorSource(article_lines)))
+article_lines
+article_tdm <- TermDocumentMatrix(article_lines)
+hom <- calculate_homology(article_tdm)
+article_barcode <- ripsDiag(as.matrix(article_tdm), 1, 5, printProgress = FALSE)
+article_barcode
+plot(article_barcode[["diagram"]],barcode = TRUE)
+sum((hom[, "death"] - hom[, "birth"] > 0.01) & hom[, "dimension"] == 1) 
+```
+
 
 ###Calculate BettiNumbers for Fake news
 ```{r}

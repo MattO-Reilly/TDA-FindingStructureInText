@@ -31,9 +31,8 @@ library(nonlinearTseries)
 ```{r}
 buzzfeed_real <- read_excel('../data/Buzzfeed/BuzzFeed_real_news_content.xlsx', col_types = "text")
 buzzfeed_fake <- read_excel('../data/Buzzfeed/BuzzFeed_fake_news_content.xlsx', col_types = "text")
-
-here('../data/Buzzfeed/BuzzFeed_fake_news_content.xlsx')
-here('../data/Buzzfeed/BuzzFeed_real_news_content.xlsx')
+#here('../data/Buzzfeed/BuzzFeed_fake_news_content.xlsx')
+#here('../data/Buzzfeed/BuzzFeed_real_news_content.xlsx')
 ```
 
 
@@ -100,7 +99,7 @@ buzzfeed_df$text <- gsub("[^\u0001-\u007F]+|<U\\+\\w+>","", buzzfeed_df$text) #r
 article_corpus <- preprocess_corpus(Corpus(VectorSource(buzzfeed_df$text)))
 #Convert corpus to dataframe
 article_df <- data.frame(text_processed=sapply(article_corpus, identity),type = buzzfeed_df$type, stringsAsFactors=F)
-
+View(article_df)
 ```
 
 
