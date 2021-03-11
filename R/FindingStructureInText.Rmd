@@ -34,7 +34,7 @@ library(nonlinearTseries)
 ```
 
 ```{r}
-num_articles = 50
+num_articles = 500
 text_data <- read_excel("../data/freq_vectors.xlsx", col_types = 'text', .name_repair = "minimal")
 text_data <- text_data[1:num_articles,]
 ```
@@ -98,40 +98,41 @@ article_politics <- preprocess_corpus(Corpus(VectorSource(text_data_politics$tex
 
 ```{r}
 tech_dtm <- TermDocumentMatrix(article_tech)
-tech_dtm <- removeSparseTerms(tech_dtm, 0.6)
-tech_barcode <- ripsDiag(as.matrix(tech_dtm), 1, 5, printProgress = FALSE)
+tech_dtm <- removeSparseTerms(tech_dtm, 0.71)
+tech_barcode <- ripsDiag(as.matrix(tech_dtm), 1, 20, printProgress = FALSE)
 plot(tech_barcode[["diagram"]],barcode = TRUE)
 tech_freqwords <- findMostFreqTerms(tech_dtm, n = 100)
 ```
 
 ```{r}
 business_dtm <- TermDocumentMatrix(article_business)
-business_dtm <- removeSparseTerms(business_dtm, 0.60)
-business_barcode <- ripsDiag(as.matrix(business_dtm), 1, 5, printProgress = FALSE)
+business_dtm <- removeSparseTerms(business_dtm, 0.71)
+business_barcode <- ripsDiag(as.matrix(business_dtm), 1, 30, printProgress = FALSE)
 plot(business_barcode[["diagram"]],barcode = TRUE)
 business_freqwords <- findMostFreqTerms(business_dtm, n = 100)
 ```
 
 ```{r}
 sport_dtm <- TermDocumentMatrix(article_sport)
-sport_dtm <- removeSparseTerms(sport_dtm, 0.60)
-sport_barcode <- ripsDiag(as.matrix(sport_dtm), 1, 5, printProgress = FALSE)
+sport_dtm <- removeSparseTerms(sport_dtm, 0.71)
+sport_barcode <- ripsDiag(as.matrix(sport_dtm), 1, 20, printProgress = FALSE)
 plot(sport_barcode[["diagram"]],barcode = TRUE)
 sport_freqwords <- findMostFreqTerms(sport_dtm, n = 100)
 ```
 
 ```{r}
 entertainment_dtm <- TermDocumentMatrix(article_entertainment)
-entertainment_dtm <- removeSparseTerms(entertainment_dtm, 0.60)
-entertainment_barcode <- ripsDiag(as.matrix(entertainment_dtm), 1, 5, printProgress = FALSE)
+entertainment_dtm <- removeSparseTerms(entertainment_dtm, 0.71)
+entertainment_barcode <- ripsDiag(as.matrix(entertainment_dtm), 1, 20, printProgress = FALSE)
 plot(entertainment_barcode[["diagram"]],barcode = TRUE)
+entertainment_barcode[['diagram']]
 entertainment_freqwords <- findMostFreqTerms(entertainment_dtm, n = 100)
 ```
 
 ```{r}
 politics_dtm <- TermDocumentMatrix(article_politics)
-politics_dtm <- removeSparseTerms(politics_dtm, 0.60)
-politics_barcode <- ripsDiag(as.matrix(politics_dtm), 1, 5, printProgress = FALSE)
+politics_dtm <- removeSparseTerms(politics_dtm, 0.71)
+politics_barcode <- ripsDiag(as.matrix(politics_dtm), 1, 20, printProgress = FALSE)
 plot(politics_barcode[["diagram"]],barcode = TRUE)
 politics_freqwords <- findMostFreqTerms(politics_dtm, n = 100)
 #findFreqTerms(review_dtm, 10)
@@ -185,6 +186,19 @@ legend(x=-2, y=-1, c("y small","y medium","large y"),pch=21,
 text_data$Category_TDA <- NA
 text_data$correct <- NA
 
+text_data$Category_TDA[text_data$Betti_Num == 2] = 'entertainment'
+text_data$Category_TDA[text_data$Betti_Num == 3] = 'business'
+text_data$Category_TDA[text_data$Betti_Num == 6] = 'sport / tech'
+#text_data$Category_TDA[text_data$Betti_Num == 6] = 'tech'
+text_data$Category_TDA[text_data$Betti_Num == 5] = 'politics'
+
+value <- stringr::str_detect( text_data$Category_TDA,text_data$category)
+text_data$correct <- value
+text_data$correct <- as.integer(as.logical(text_data$correct))
+text_data$correct[is.na(text_data$correct)]<- 0
+sum(text_data$correct/num_articles)
+```
+
 text_data$Category_TDA[text_data$Betti_Num < 2] = 'entertainment'
 text_data$Category_TDA[text_data$Betti_Num >= 2 & text_data$Betti_Num <= 3] = 'entertainment / business / sport'
 text_data$Category_TDA[text_data$Betti_Num >3 & text_data$Betti_Num <= 4] = 'business / sport'
@@ -192,11 +206,3 @@ text_data$Category_TDA[text_data$Betti_Num >4 & text_data$Betti_Num <= 5] = 'spo
 text_data$Category_TDA[text_data$Betti_Num >5 & text_data$Betti_Num <= 6] = 'tech'
 text_data$Category_TDA[text_data$Betti_Num >6 & text_data$Betti_Num <= 9] = 'tech / politics'
 text_data$Category_TDA[text_data$Betti_Num > 9] = 'politics'
-
-
-value <- stringr::str_detect( text_data$Category_TDA,text_data$category)
-text_data$correct <- value
-text_data$correct <- as.integer(as.logical(text_data$correct))
-sum(text_data$correct/num_articles)
-```
-
