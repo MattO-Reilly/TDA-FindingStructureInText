@@ -158,7 +158,7 @@ text_data$Betti_Num <- bettiNum_list
 #View(text_data)
 ```
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 bettiNum <- as.matrix(bettiNum_list)
 bettiNum.dist <- dist(bettiNum)
 m1 <- mapper1D(
@@ -200,11 +200,3 @@ text_data$correct <- as.integer(as.logical(text_data$correct))
 sum(text_data$correct/num_articles)
 ```
 
-text_data$Category_TDA[text_data$Betti_Num >= 2 & text_data$Betti_Num <= 4] = 'entertainment / sport'
-text_data$Category_TDA[text_data$Betti_Num == 3] = 'business'
-text_data$Category_TDA[text_data$Betti_Num >= 3 & text_data$Betti_Num <= 4] = 'business / sport'
-text_data$Category_TDA[text_data$Betti_Num > 3 & text_data$Betti_Num < 5] = 'sport'
-text_data$Category_TDA[text_data$Betti_Num == 5] = 'sport / tech'
-text_data$Category_TDA[text_data$Betti_Num > 5 & text_data$Betti_Num < 8] = 'tech'
-text_data$Category_TDA[text_data$Betti_Num == 8] = 'tech / politics'
-text_data$Category_TDA[text_data$Betti_Num > 8] = 'politics'
