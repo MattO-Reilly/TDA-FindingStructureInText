@@ -23,18 +23,16 @@ library(qdap)#rm_stopwords function
 library(tm) #NLP
 library(textstem) #Text Lemmatizer
 library(superml)
+
+
 library(TDAmapper) #Mapper algorithm
 library(igraph) #Plotting mapper
-
-
-
 library(TDAstats)
 library(TDA)
-library(nonlinearTseries)
 ```
 
 ```{r}
-num_articles = 500
+num_articles = 50
 text_data <- read_excel("../data/freq_vectors.xlsx", col_types = 'text', .name_repair = "minimal")
 text_data <- text_data[1:num_articles,]
 ```
@@ -83,78 +81,78 @@ preprocess_corpus <- function(corpus){
   corpus <- tm_map(corpus, stripWhitespace)
   #Remove single letter words
   corpus <- tm_map(corpus, content_transformer(removeSingle))
-  return (corpus)
+  terms <-TermDocumentMatrix(corpus,control = list(weighting = function(x) weightTfIdf(x, normalize = TRUE)))
+
+  return (terms)
 }
 
 ```
 
 ```{r warning=FALSE}
-article_tech <- preprocess_corpus(Corpus(VectorSource(text_data_tech$text)))
-article_business <- preprocess_corpus(Corpus(VectorSource(text_data_business$text)))
-article_sport <- preprocess_corpus(Corpus(VectorSource(text_data_sport$text)))
-article_entertainment <- preprocess_corpus(Corpus(VectorSource(text_data_entertainment$text)))
-article_politics <- preprocess_corpus(Corpus(VectorSource(text_data_politics$text)))
+tech_tdm <- preprocess_corpus(Corpus(VectorSource(text_data_tech$text)))
+business_tdm <- preprocess_corpus(Corpus(VectorSource(text_data_business$text)))
+sport_tdm <- preprocess_corpus(Corpus(VectorSource(text_data_sport$text)))
+entertainment_tdm <- preprocess_corpus(Corpus(VectorSource(text_data_entertainment$text)))
+politics_tdm <- preprocess_corpus(Corpus(VectorSource(text_data_politics$text)))
 ```
 
 ```{r}
-tech_dtm <- TermDocumentMatrix(article_tech)
-tech_dtm <- removeSparseTerms(tech_dtm, 0.71)
-tech_barcode <- ripsDiag(as.matrix(tech_dtm), 1, 20, printProgress = FALSE)
+as.matrix(tech_tdm)
+tech_tdm <- removeSparseTerms(tech_tdm, 0.6)
+tech_barcode <- ripsDiag(as.matrix(tech_tdm), 1, 0.2, printProgress = FALSE)
+tech_barcode
 plot(tech_barcode[["diagram"]],barcode = TRUE)
-tech_freqwords <- findMostFreqTerms(tech_dtm, n = 100)
+tech_freqwords <- findMostFreqTerms(tech_tdm, n = 100)
 ```
 
+
+
 ```{r}
-business_dtm <- TermDocumentMatrix(article_business)
-business_dtm <- removeSparseTerms(business_dtm, 0.71)
-business_barcode <- ripsDiag(as.matrix(business_dtm), 1, 30, printProgress = FALSE)
+business_tdm <- removeSparseTerms(business_tdm, 0.6)
+business_barcode <- ripsDiag(as.matrix(business_tdm), 1, 0.2, printProgress = FALSE)
+business_barcode
 plot(business_barcode[["diagram"]],barcode = TRUE)
-business_freqwords <- findMostFreqTerms(business_dtm, n = 100)
+business_freqwords <- findMostFreqTerms(business_tdm, n = 100)
 ```
 
 ```{r}
-sport_dtm <- TermDocumentMatrix(article_sport)
-sport_dtm <- removeSparseTerms(sport_dtm, 0.71)
-sport_barcode <- ripsDiag(as.matrix(sport_dtm), 1, 20, printProgress = FALSE)
+sport_tdm <- removeSparseTerms(sport_tdm, 0.6)
+sport_barcode <- ripsDiag(as.matrix(sport_tdm), 1, 0.2, printProgress = FALSE)
+sport_barcode
 plot(sport_barcode[["diagram"]],barcode = TRUE)
-sport_freqwords <- findMostFreqTerms(sport_dtm, n = 100)
+sport_freqwords <- findMostFreqTerms(sport_tdm, n = 100)
 ```
 
 ```{r}
-entertainment_dtm <- TermDocumentMatrix(article_entertainment)
-entertainment_dtm <- removeSparseTerms(entertainment_dtm, 0.71)
-entertainment_barcode <- ripsDiag(as.matrix(entertainment_dtm), 1, 20, printProgress = FALSE)
+entertainment_tdm <- removeSparseTerms(entertainment_tdm, 0.6)
+entertainment_barcode <- ripsDiag(as.matrix(entertainment_tdm), 1, 0.2, printProgress = FALSE)
+entertainment_barcode
 plot(entertainment_barcode[["diagram"]],barcode = TRUE)
 entertainment_barcode[['diagram']]
-entertainment_freqwords <- findMostFreqTerms(entertainment_dtm, n = 100)
+entertainment_freqwords <- findMostFreqTerms(entertainment_tdm, n = 100)
 ```
 
 ```{r}
-politics_dtm <- TermDocumentMatrix(article_politics)
-politics_dtm <- removeSparseTerms(politics_dtm, 0.71)
-politics_barcode <- ripsDiag(as.matrix(politics_dtm), 1, 20, printProgress = FALSE)
+politics_tdm <- removeSparseTerms(politics_tdm, 0.6)
+politics_barcode <- ripsDiag(as.matrix(politics_tdm), 1, 0.2, printProgress = FALSE)
+politics_barcode
 plot(politics_barcode[["diagram"]],barcode = TRUE)
-politics_freqwords <- findMostFreqTerms(politics_dtm, n = 100)
-#findFreqTerms(review_dtm, 10)
+politics_freqwords <- findMostFreqTerms(politics_tdm, n = 100)
 ```
+
 ```{r warning=FALSE, include=FALSE}
-bettiNum_list <- list()
 bettinum <- function(x){
 article <- as.character(x) 
 article_lines <- unlist(strsplit(article, "(?<=[[:alnum:]]{3})[?!.]\\s", perl=TRUE)) #Split article into sentences
-#article_lines
-article_lines <- preprocess_corpus(Corpus(VectorSource(article_lines)))
-article_tdm <- removeSparseTerms(TermDocumentMatrix(article_lines), 0.90)
-inspect(article_tdm)
+article_tdm <- preprocess_corpus(Corpus(VectorSource(article_lines)))
+article_tdm <- removeSparseTerms(article_tdm, 0.9)
 hom <- calculate_homology(article_tdm)
-#plot_barcode((hom))
-bettinum <- sum((hom[, "death"] - hom[, "birth"] > 0.01) & hom[, "dimension"] == 1)
-#bettiNum_list <- append(bettiNum_list, bettinum)
+bettinum <- sum((hom[, "death"] - hom[, "birth"] >=0.0001) & hom[, "dimension"] == 1)
 }
 
 bettiNum_list <- as.list(apply(text_data['text'],1 , bettinum))
 text_data$Betti_Num <- bettiNum_list
-
+View(text_data)
 #kmeans <- kmeans(bettiNum_list, 5, nstart = 5 ,iter.max = 15)
 #View(text_data)
 ```
@@ -169,6 +167,7 @@ m1 <- mapper1D(
     percent_overlap = 50,
     num_bins_when_clustering = 10)
 m1
+m1.graph <- graph.adjacency(m1$adjacency, mode="undirected")
 
 vertex.size <- rep(0,m1$num_vertices)
 for (i in 1:m1$num_vertices){
@@ -186,11 +185,11 @@ legend(x=-2, y=-1, c("y small","y medium","large y"),pch=21,
 text_data$Category_TDA <- NA
 text_data$correct <- NA
 
-text_data$Category_TDA[text_data$Betti_Num == 2] = 'entertainment'
+text_data$Category_TDA[text_data$Betti_Num <= 2] = 'entertainment'
 text_data$Category_TDA[text_data$Betti_Num == 3] = 'business'
-text_data$Category_TDA[text_data$Betti_Num == 6] = 'sport / tech'
-#text_data$Category_TDA[text_data$Betti_Num == 6] = 'tech'
-text_data$Category_TDA[text_data$Betti_Num == 5] = 'politics'
+text_data$Category_TDA[text_data$Betti_Num == 4 | text_data$Betti_Num == 5 | text_data$Betti_Num == 6] = 'sport'
+text_data$Category_TDA[text_data$Betti_Num >= 9] = 'tech'
+text_data$Category_TDA[text_data$Betti_Num == 7 | text_data$Betti_Num == 8] = 'politics'
 
 value <- stringr::str_detect( text_data$Category_TDA,text_data$category)
 text_data$correct <- value

@@ -1,7 +1,7 @@
 ---
-title: "FakevsReal_News"
+title: "FakeNewsAnalysis"
 author: "Matt O'Reilly"
-date: "1/8/2021"
+date: "2/12/2021"
 output: html_document
 ---
 
@@ -9,25 +9,62 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
-#Data Manipulation and Read_excel
-library(tidyverse) 
-library(dplyr)
-library(readxl)
 
-library(superml) #Word count vectors
-library(TDAmapper) #Mapper algorithm
-library(TDA)
-library(TDAstats) #Calculate homology
-library(igraph) #Plotting mapper
+```{r}
+# Import libraries
+library(plyr) #  for pre-processing 
+library(tidyverse) # for pre-processing and visualisation
+library(readxl)
+library(igraph)
 
 #Natural Language Processing
-library(tokenizers) #tokenize_sentences
+library(superml)
+library(tokenizers) #tokenize_sentences function
+library(qdap)#rm_stopwords function
 library(tm) #NLP
 library(textstem) #Text Lemmatizer
+
+library(TDAstats)
+library(TDA)
+library(TDAmapper) #Mapper algorithm
+
 ```
 
 ```{r}
+buzzfeed_real <- read_excel('../data/Buzzfeed/BuzzFeed_real_news_content.xlsx', col_types = "text")
+buzzfeed_fake <- read_excel('../data/Buzzfeed/BuzzFeed_fake_news_content.xlsx', col_types = "text")
+```
+
+
+```{r}
+# merge data frames and delete old data frames 
+buzzfeed_df = rbind(buzzfeed_real, buzzfeed_fake)
+
+# adding new column of type for categorising document as real or fake 
+buzzfeed_df$type <- sapply(strsplit(buzzfeed_df$id, "_"), head,  1)
+```
+
+```{r}
+# check the dimensions of the datset
+dim(buzzfeed_df)
+
+# check the summary of dataset
+summary(buzzfeed_df)
+```
+
+
+```{r}
+# select necessary columns from the dataframe for analysis
+buzzfeed_df <- buzzfeed_df[c("id","title","text","type")]
+buzzfeed_df <- buzzfeed_df[-c(96, 124), ]  #Remove website error articles 
+
+buzzfeed_real <- buzzfeed_df[1:91,]
+buzzfeed_fake <- buzzfeed_df[92:180, ]
+```
+
+```{r}
+irrelevant_words <- c("american", "campaign", "can", "clinton", "clinton‚äô", "countri", "debat", "donald", "don‚äôt", "email", "even", "first", "foundat", "get", "hillari", "just", "know", "like", "make", "mani", "nation", "need", "new", "news", "obama", "one", "peopl", "presid", "report", "right", "said", "say", "state", "take", "thing", "think", "time" , "trump", "will", "‚äì" , "‚äî", "‚äôs", "also", "call", "now", "share", "elect", "muslim", "terrorist", "want", "polic", "adult", "also", "attack", "author", "can", "candid", "clinton", "countri", "day", "donald", "first", "get", "hillari", "just", "know", "last", "like", "live", "make", "may", "need", "new", "news", "now", "peopl", "polic", "polit", "presid", "question", "said", "say", "septemb", "support", "thing", "time", "trump", "two", "want", "week", "world",  "year", "york", "‚äôs", "‚äù", "‚äúi", "american", "ask", "black", "call", "continu", "even", "offic", "one", "presidenti", "protest", "report", "republican", "right", "see", "show", "think", "will", "work", "‚äî", "nation", "obama", "state", "take", "war", "debat", "democrat", "elect", "monday", "poll", "stori", "trump‚äô", "way", "former", "campaign", "polici", "told", "page")
+
 clean_text <- function(x){ 
   gsub("…|⋆|–|‹|”|“|‘|’", " ", x) 
 }
@@ -44,132 +81,79 @@ preprocess_corpus <- function(corpus){
   # Remove special characters from text
   corpus <- tm_map(corpus, clean_text)
   # Remove english common stopwords
-  corpus <- tm_map(corpus, removeWords, stopwords("english"))
+  #corpus <- tm_map(corpus, removeWords, stopwords("english"))
   # Remove name of newspapers from the corpus
-  corpus <- tm_map(corpus, removeWords, c("eagle rising","freedom daily"))
+  #corpus <- tm_map(corpus, removeWords, irrelevant_words)
   # 'stem' words to root words
   corpus <- tm_map(corpus,stemDocument)
   # Eliminate extra white spaces
   corpus <- tm_map(corpus, stripWhitespace)
   #Remove single letter words
   corpus <- tm_map(corpus, content_transformer(removeSingle))
-  return (corpus)
+  terms <-TermDocumentMatrix(corpus,control = list(weighting = function(x) weightTfIdf(x, normalize = TRUE)))
+
+  return (terms)
 }
-
 ```
 
-###Load in Real and Fake news data
+
+###Article Title Analysis
 ```{r}
-num_articles = 400 #Pick how many fake and real articles are used
+#Text processing
+buzzfeed_df <- buzzfeed_df[-c(96, 124), ]  #Remove website error articles 
+#buzzfeed_df$text <- gsub('\n', '[.]', buzzfeed_df$text)
+buzzfeed_df$text <- gsub("[^\u0001-\u007F]+|<U\\+\\w+>","", buzzfeed_df$text) #remove non ascii characters
 
 
-Real_news_data <- read_excel("../data/FakeRealNews/True.xlsx", col_types = "text", .name_repair = "minimal")
-Real_news_data <- Real_news_data[1:num_articles,1:4]
-#Real_news_data$text <- tokenize_sentences(Real_news_data$text, lowercase = TRUE, strip_punct = TRUE, simplify = FALSE)
-#class(Real_news_data$text)
 
-Fake_news_data <- read_excel("../data/FakeRealNews/Fake.xlsx", col_types = "text", .name_repair = "minimal")
-Fake_news_data <- Fake_news_data[1:num_articles,1:4]
-#Fake_news_data$text <- tokenize_sentences(Fake_news_data$text, lowercase = TRUE, strip_punct = TRUE, simplify = FALSE)
+#Create Corpus of all articles and apply Natural Language Process to it
+article_tdm <- preprocess_corpus(Corpus(VectorSource(buzzfeed_df$text)))
 ```
 
-```{r warning=FALSE}
-article_fake <- preprocess_corpus(Corpus(VectorSource(Fake_news_data$text)))
-article_real <- preprocess_corpus(Corpus(VectorSource(Real_news_data$text)))
-```
-
+#Fake Articles Barcode
 ```{r}
-fake_tdm <- TermDocumentMatrix(article_fake)
-fake_tdm <- removeSparseTerms(fake_tdm, 0.6)
-fake_barcode <- ripsDiag(as.matrix(fake_tdm), 2, 150, printProgress = FALSE)
-plot(fake_barcode[["diagram"]],barcode = TRUE)
-fake_freqwords <- findMostFreqTerms(fake_tdm, n = 100)
-```
-```{r}
-real_tdm <- TermDocumentMatrix(article_real)
-real_tdm <- removeSparseTerms(real_tdm, 0.6)
-real_barcode <- ripsDiag(as.matrix(real_tdm), 1, 300, printProgress = FALSE)
-plot(real_barcode[["diagram"]],barcode = TRUE)
-real_freqwords <- findMostFreqTerms(real_tdm, n = 100)
+#Create Corpus of all articles and apply Natural Language Process to it
+Fake_tdm <- preprocess_corpus(Corpus(VectorSource(buzzfeed_fake$text)))
+Fake_lf_terms <- findFreqTerms(Fake_tdm, lowfreq=50) 
+Fake_tdm <- removeSparseTerms(Fake_tdm , 0.73)
+Fake_barcode <- ripsDiag(as.matrix(Fake_tdm), 1, 0.2, printProgress = FALSE)
+plot(Fake_barcode[["diagram"]],barcode = TRUE)
+Fake_freqwords <- findMostFreqTerms(Fake_tdm, n = 100)
 ```
 
+#Real Articles Barcode
 ```{r}
-article <- as.character(Fake_news_data['text'][5,]) #Remove numbers from articles
-article_lines <- unlist(strsplit(article, "[.]"))#Split article into sentences
-article_lines <- preprocess_corpus(Corpus(VectorSource(article_lines)))
-article_lines
-article_tdm <- TermDocumentMatrix(article_lines)
+#Create Corpus of all articles and apply Natural Language Process to it
+Real_tdm <- preprocess_corpus(Corpus(VectorSource(buzzfeed_real$text)))
+Real_tdm <- removeSparseTerms(Real_tdm , 0.73)
+Real_barcode <- ripsDiag(as.matrix(Real_tdm), 1, 0.2, printProgress = FALSE)
+plot(Real_barcode[["diagram"]],barcode = TRUE)
+Real_freqwords <- findMostFreqTerms(Real_tdm, n = 100)
+```
+
+```{r warning=FALSE, include=FALSE}
+bettinum <- function(x){
+article <- as.character(x) 
+article_tdm <- unlist(strsplit(article, "(?<=[[:alnum:]]{3})[?!.]\\s", perl=TRUE)) #Split article into sentences
+article_tdm <- preprocess_corpus(Corpus(VectorSource(article_tdm)))
+article_tdm <- removeSparseTerms(article_tdm, 0.93)
 hom <- calculate_homology(article_tdm)
-article_barcode <- ripsDiag(as.matrix(article_tdm), 1, 5, printProgress = FALSE)
-article_barcode
-plot(article_barcode[["diagram"]],barcode = TRUE)
-sum((hom[, "death"] - hom[, "birth"] > 0.01) & hom[, "dimension"] == 1) 
-```
-
-
-###Calculate BettiNumbers for Fake news
-```{r}
-tfv <- TfIdfVectorizer$new(max_features = 10, remove_stopwords = FALSE)
-
-Fake_bettiNum_list <- list()
-for (i in 1:nrow(Fake_news_data)){
-  article <- unlist(Fake_news_data$text[i], use.names=FALSE)
-  cf_mat1 <- tfv$fit_transform(article)
-  hom <- calculate_homology(cf_mat1, return_df = TRUE)
-  bettinum <- sum((hom[, "death"] - hom[, "birth"] > 0.01) & hom[, "dimension"] == 1) 
-  Fake_bettiNum_list <- append(Fake_bettiNum_list, bettinum)
+bettinum <- sum((hom[, "death"] - hom[, "birth"] > 0.001) & hom[, "dimension"] == 1)
 }
-Fake_news_data$Betti_Num <- Fake_bettiNum_list
-Fake_news_data$ID <- rep('Fake', num_articles)
-```
 
+bettiNum_list <- as.list(apply(buzzfeed_df['text'],1 , bettinum))
+buzzfeed_df$Betti_Num <- bettiNum_list
 
-###Calculate BettiNumbers for Real news
-```{r}
-Real_bettiNum_list <- list()
-for (i in 1:nrow(Real_news_data)){
-  article <- unlist(Real_news_data$text[i], use.names=FALSE)
-  cf_mat1 <- tfv$fit_transform(article)
-  hom <- calculate_homology(cf_mat1, return_df = TRUE)
-  bettinum <- sum((hom[, "death"] - hom[, "birth"] > 0.01) & hom[, "dimension"] == 1) 
-  Real_bettiNum_list <- append(Real_bettiNum_list, bettinum)
-}
-Real_news_data$Betti_Num <- Real_bettiNum_list
-Real_news_data$ID <- rep('Real', num_articles)
-```
-
-
-```{r}
-Average_Real_bettinum <- mean(as.numeric(Real_news_data$Betti_Num))
-Average_Real_bettinum #5.265
-
-Average_Fake_bettinum <- mean(as.numeric(Fake_news_data$Betti_Num))
-Average_Fake_bettinum #2.735
-
-Total_news_data <- rbind(Real_news_data,Fake_news_data)
-
+#kmeans <- kmeans(bettiNum_list, 2, nstart = 5 ,iter.max = 15)
+#kmeans
 ```
 
 ```{r}
-BettiNum_Category <- list()
-
-for (i in 1:nrow(Total_news_data)){
-  classification <- as.list(ifelse(Total_news_data$Betti_Num >= 5, 'Real', 'Fake'))
-}
-Total_news_data$classification <- classification
-
-correct <- sum(ifelse(Total_news_data$ID == Total_news_data$classification, 1, 0)) #Num of correctly classified news articles.
-correct/(num_articles*2)
-count(Total_news_data)
-```
-
-
-```{r}
-bettiNum <- as.matrix(Total_news_data$Betti_Num)
-bettiNum.dist <- dist(bettiNum)
+bettiNum <- as.matrix(bettiNum_list)
+bettiNum.dist <- dist(bettiNum_list)
 m1 <- mapper1D(
     distance_matrix = bettiNum.dist,
-    filter_values = 1:800,
+    filter_values = 1:nrow(buzzfeed_df),
     num_intervals = 2,
     percent_overlap = 50,
     num_bins_when_clustering = 10)
@@ -177,6 +161,53 @@ m1
 m1.graph <- graph.adjacency(m1$adjacency, mode="undirected")
 plot(m1.graph, layout = layout.auto(m1.graph) )
 
+
+vertex.size <- rep(0,m1$num_vertices)
+for (i in 1:m1$num_vertices){
+  points.in.vertex <- m1$points_in_vertex[[i]]
+  vertex.size[i] <- length((m1$points_in_vertex[[i]]))
+}
+V(m1.graph)$size <- vertex.size
+
+plot(m1.graph,main ="Mapper Graph")
 ```
 
+```{r}
+buzzfeed_df$Category_TDA <- NA
+buzzfeed_df$correct <- NA
+
+buzzfeed_df$Category_TDA[buzzfeed_df$Betti_Num <= 4] = 'Real'
+buzzfeed_df$Category_TDA[buzzfeed_df$Betti_Num == 5 ] = 'Real / Fake'
+buzzfeed_df$Category_TDA[buzzfeed_df$Betti_Num >= 6] = 'Fake'
+
+value <- stringr::str_detect( buzzfeed_df$Category_TDA,buzzfeed_df$type)
+buzzfeed_df$correct <- value
+buzzfeed_df$correct <- as.integer(as.logical(buzzfeed_df$correct))
+buzzfeed_df$correct[is.na(buzzfeed_df$correct)]<- 0
+sum(buzzfeed_df$correct/nrow(buzzfeed_df))
+```
+
+
+```{r}
+buzzfeed_real <- buzzfeed_df[1:91,]
+mean_real <- sum(unlist(buzzfeed_real$Betti_Num))/nrow(buzzfeed_real)
+sd_real <- sd(unlist(buzzfeed_real$Betti_Num))
+error_real <- qnorm(0.95)*sd_real/sqrt(nrow(buzzfeed_real))
+mean_real
+
+#Fake articles
+buzzfeed_fake <-  buzzfeed_df[92:180,]
+mean_fake <- sum(unlist(buzzfeed_fake$Betti_Num))/nrow(buzzfeed_fake)
+sd_fake <- sd(unlist(buzzfeed_fake$Betti_Num))
+error_fake <- qnorm(0.95)*sd_fake/sqrt(nrow(buzzfeed_fake))
+mean_fake
+```
+The 95% confidence interval for Fake articles is
+`r round((mean_fake - error_fake),2)`, `r round((mean_fake + error_fake),2)`
+(2.7,4.2)
+
+
+The 95% confidence interval for Real articles is
+`r round((mean_real - error_real),2)`, `r round((mean_real + error_real),2)`
+(2.28,3.32)
 
