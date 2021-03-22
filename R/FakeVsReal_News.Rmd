@@ -2,7 +2,9 @@
 title: "FakeNewsAnalysis"
 author: "Matt O'Reilly"
 date: "2/12/2021"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -97,7 +99,7 @@ preprocess_corpus <- function(corpus){
 ```
 
 
-###Article Title Analysis
+###Article Text Analysis
 ```{r}
 #Text processing
 buzzfeed_df <- buzzfeed_df[-c(96, 124), ]  #Remove website error articles 
@@ -112,6 +114,10 @@ article_tdm <- preprocess_corpus(Corpus(VectorSource(buzzfeed_df$text)))
 
 #Fake Articles Barcode
 ```{r}
+
+set.seed(10)
+
+
 #Create Corpus of all articles and apply Natural Language Process to it
 Fake_tdm <- preprocess_corpus(Corpus(VectorSource(buzzfeed_fake$text)))
 Fake_lf_terms <- findFreqTerms(Fake_tdm, lowfreq=50) 
@@ -137,8 +143,8 @@ article <- as.character(x)
 article_tdm <- unlist(strsplit(article, "(?<=[[:alnum:]]{3})[?!.]\\s", perl=TRUE)) #Split article into sentences
 article_tdm <- preprocess_corpus(Corpus(VectorSource(article_tdm)))
 article_tdm <- removeSparseTerms(article_tdm, 0.93)
-hom <- calculate_homology(article_tdm)
-bettinum <- sum((hom[, "death"] - hom[, "birth"] > 0.001) & hom[, "dimension"] == 1)
+hom <- calculate_homology(article_tdm) 
+bettinum <- sum((hom[, "death"] - hom[, "birth"] > 0.005) & hom[, "dimension"] == 1)
 }
 
 bettiNum_list <- as.list(apply(buzzfeed_df['text'],1 , bettinum))
@@ -147,6 +153,10 @@ buzzfeed_df$Betti_Num <- bettiNum_list
 #kmeans <- kmeans(bettiNum_list, 2, nstart = 5 ,iter.max = 15)
 #kmeans
 ```
+
+
+
+
 
 ```{r}
 bettiNum <- as.matrix(bettiNum_list)
@@ -172,21 +182,6 @@ V(m1.graph)$size <- vertex.size
 plot(m1.graph,main ="Mapper Graph")
 ```
 
-```{r}
-buzzfeed_df$Category_TDA <- NA
-buzzfeed_df$correct <- NA
-
-buzzfeed_df$Category_TDA[buzzfeed_df$Betti_Num <= 4] = 'Real'
-buzzfeed_df$Category_TDA[buzzfeed_df$Betti_Num == 5 ] = 'Real / Fake'
-buzzfeed_df$Category_TDA[buzzfeed_df$Betti_Num >= 6] = 'Fake'
-
-value <- stringr::str_detect( buzzfeed_df$Category_TDA,buzzfeed_df$type)
-buzzfeed_df$correct <- value
-buzzfeed_df$correct <- as.integer(as.logical(buzzfeed_df$correct))
-buzzfeed_df$correct[is.na(buzzfeed_df$correct)]<- 0
-sum(buzzfeed_df$correct/nrow(buzzfeed_df))
-```
-
 
 ```{r}
 buzzfeed_real <- buzzfeed_df[1:91,]
@@ -210,4 +205,67 @@ The 95% confidence interval for Fake articles is
 The 95% confidence interval for Real articles is
 `r round((mean_real - error_real),2)`, `r round((mean_real + error_real),2)`
 (2.28,3.32)
+
+
+#KNN Clustering Algorithm with TF-idf input
+```{r, warning=FALSE}
+article_tdm <- preprocess_corpus(Corpus(VectorSource(buzzfeed_df$text)))
+mat.df <- as.data.frame(data.matrix(article_tdm), stringsAsfactors = FALSE)
+mat.df <- t(mat.df)
+mat.df <- cbind(mat.df, buzzfeed_df$type)
+colnames(mat.df)[ncol(mat.df)] <- "category"
+
+train <- sample(nrow(mat.df), ceiling(nrow(mat.df) * .70))
+test <- (1:nrow(mat.df))[- train]
+cl <- mat.df[,"category"]
+
+modeldata <- mat.df[,!colnames(mat.df) %in% "category"]
+knn.pred <- knn(modeldata[train,], modeldata[test, ], cl[train], k = sqrt(nrow(buzzfeed_df)))
+conf.mat <- table("Predictions" = knn.pred, Actual = cl[test])
+conf.mat
+(accuracy <- sum(diag(conf.mat))/length(test) * 100)
+```
+
+
+#KNN Clustering Algorithm with BettiNum input
+```{r}
+mat.df <- as.data.frame(as.matrix(dist(buzzfeed_df$Betti_Num), stringsAsfactors = FALSE))
+mat.df <- cbind(mat.df, buzzfeed_df$type)
+colnames(mat.df)[ncol(mat.df)] <- "category"
+
+train <- sample(nrow(mat.df), ceiling(nrow(mat.df) * .70))
+test <- (1:nrow(mat.df))[- train]
+cl <- mat.df[,"category"]
+
+modeldata <- mat.df[,!colnames(mat.df) %in% "category"]
+knn.pred <- knn(modeldata[train,], modeldata[test, ], cl[train], k = sqrt(nrow(buzzfeed_df)))
+conf.mat <- table("Predictions" = knn.pred, Actual = cl[test])
+conf.mat
+(accuracy <- sum(diag(conf.mat))/length(test) * 100)
+```
+
+#KNN Clustering Algorithm with BettiNum and Tf-idf
+
+set.seed(10)
+article_tdm <- preprocess_corpus(Corpus(VectorSource(buzzfeed_df$text)))
+article.df <- t(as.data.frame(data.matrix(article_tdm), stringsAsfactors = FALSE))
+
+mat.df <- as.data.frame(as.matrix(dist(buzzfeed_df$Betti_Num), stringsAsfactors = FALSE))
+mat.df <- cbind(mat.df, buzzfeed_df$type)
+colnames(mat.df)[ncol(mat.df)] <- "category"
+mat.df <- cbind(mat.df, article.df)
+
+
+train <- sample(nrow(mat.df), ceiling(nrow(mat.df) * .70))
+test <- (1:nrow(mat.df))[- train]
+cl <- mat.df[,"category"]
+
+modeldata <- mat.df[,!colnames(mat.df) %in% "category"]
+knn.pred <- knn(modeldata[train,], modeldata[test, ], cl[train], k = sqrt(nrow(buzzfeed_df)))
+conf.mat <- table("Predictions" = knn.pred, Actual = cl[test])
+conf.mat
+(accuracy <- sum(diag(conf.mat))/length(test) * 100)
+
+```{r}
+```
 

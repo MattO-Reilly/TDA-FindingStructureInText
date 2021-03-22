@@ -147,13 +147,15 @@ article_lines <- unlist(strsplit(article, "(?<=[[:alnum:]]{3})[?!.]\\s", perl=TR
 article_tdm <- preprocess_corpus(Corpus(VectorSource(article_lines)))
 article_tdm <- removeSparseTerms(article_tdm, 0.9)
 hom <- calculate_homology(article_tdm)
-bettinum <- sum((hom[, "death"] - hom[, "birth"] >=0.0001) & hom[, "dimension"] == 1)
+Diag2 <- ripsDiag(hom, maxdimension, DiagLim, printProgress = FALSE)
+#bettinum <- sum((hom[, "death"] - hom[, "birth"] >=0.0001) & hom[, "dimension"] == 1)
 }
 
-bettiNum_list <- as.list(apply(text_data['text'],1 , bettinum))
+bettiNum_list <- apply(text_data['text'],1 , bettinum)
 text_data$Betti_Num <- bettiNum_list
 View(text_data)
-#kmeans <- kmeans(bettiNum_list, 5, nstart = 5 ,iter.max = 15)
+
+kmeans <- knnDE(bettiNum_list, 5, nstart = 5 ,iter.max = 15)
 #View(text_data)
 ```
 
@@ -182,6 +184,13 @@ legend(x=-2, y=-1, c("y small","y medium","large y"),pch=21,
 ```
 
 ```{r}
+DistMatrix = matrix(1:2500, nrow = 50, ncol = 50)
+for (i in (1:nrow(DistMatrix))){
+  for (j in (1:ncol(DistMatrix))){
+    DistMatrix[i,j] <- bottleneck()
+  }
+}
+
 text_data$Category_TDA <- NA
 text_data$correct <- NA
 
@@ -198,10 +207,4 @@ text_data$correct[is.na(text_data$correct)]<- 0
 sum(text_data$correct/num_articles)
 ```
 
-text_data$Category_TDA[text_data$Betti_Num < 2] = 'entertainment'
-text_data$Category_TDA[text_data$Betti_Num >= 2 & text_data$Betti_Num <= 3] = 'entertainment / business / sport'
-text_data$Category_TDA[text_data$Betti_Num >3 & text_data$Betti_Num <= 4] = 'business / sport'
-text_data$Category_TDA[text_data$Betti_Num >4 & text_data$Betti_Num <= 5] = 'sport'
-text_data$Category_TDA[text_data$Betti_Num >5 & text_data$Betti_Num <= 6] = 'tech'
-text_data$Category_TDA[text_data$Betti_Num >6 & text_data$Betti_Num <= 9] = 'tech / politics'
-text_data$Category_TDA[text_data$Betti_Num > 9] = 'politics'
+
