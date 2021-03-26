@@ -29,10 +29,11 @@ library(TDAmapper) #Mapper algorithm
 library(igraph) #Plotting mapper
 library(TDAstats)
 library(TDA)
+library(class)
 ```
 
 ```{r}
-num_articles = 50
+num_articles = 200
 text_data <- read_excel("../data/freq_vectors.xlsx", col_types = 'text', .name_repair = "minimal")
 text_data <- text_data[1:num_articles,]
 ```
@@ -81,7 +82,7 @@ preprocess_corpus <- function(corpus){
   corpus <- tm_map(corpus, stripWhitespace)
   #Remove single letter words
   corpus <- tm_map(corpus, content_transformer(removeSingle))
-  terms <-TermDocumentMatrix(corpus,control = list(weighting = function(x) weightTfIdf(x, normalize = TRUE)))
+  terms <-DocumentTermMatrix(corpus,control = list(weighting = function(x) weightTfIdf(x, normalize = TRUE)))
 
   return (terms)
 }
@@ -104,8 +105,6 @@ tech_barcode
 plot(tech_barcode[["diagram"]],barcode = TRUE)
 tech_freqwords <- findMostFreqTerms(tech_tdm, n = 100)
 ```
-
-
 
 ```{r}
 business_tdm <- removeSparseTerms(business_tdm, 0.6)
@@ -147,15 +146,14 @@ article_lines <- unlist(strsplit(article, "(?<=[[:alnum:]]{3})[?!.]\\s", perl=TR
 article_tdm <- preprocess_corpus(Corpus(VectorSource(article_lines)))
 article_tdm <- removeSparseTerms(article_tdm, 0.9)
 hom <- calculate_homology(article_tdm)
-Diag2 <- ripsDiag(hom, maxdimension, DiagLim, printProgress = FALSE)
-#bettinum <- sum((hom[, "death"] - hom[, "birth"] >=0.0001) & hom[, "dimension"] == 1)
+bettinum <- sum((hom[, "death"] - hom[, "birth"] >=0.005) & hom[, "dimension"] == 1)
 }
 
 bettiNum_list <- apply(text_data['text'],1 , bettinum)
 text_data$Betti_Num <- bettiNum_list
 View(text_data)
 
-kmeans <- knnDE(bettiNum_list, 5, nstart = 5 ,iter.max = 15)
+#kmeans <- kmeans(bettiNum_list, 5, nstart = 5 ,iter.max = 15)
 #View(text_data)
 ```
 
@@ -183,28 +181,37 @@ legend(x=-2, y=-1, c("y small","y medium","large y"),pch=21,
        col="#777777", pt.bg=c(1,0.5,0), pt.cex=2, cex=.8, bty="n", ncol=1)
 ```
 
+#KNN Clustering Algorithm with TF-idf input
 ```{r}
-DistMatrix = matrix(1:2500, nrow = 50, ncol = 50)
-for (i in (1:nrow(DistMatrix))){
-  for (j in (1:ncol(DistMatrix))){
-    DistMatrix[i,j] <- bottleneck()
-  }
-}
+set.seed(9)
+article_tdm <- preprocess_corpus(Corpus(VectorSource(text_data$text)))
+mat.df <- as.data.frame(data.matrix(article_tdm), stringsAsfactors = FALSE)
+mat.df <- cbind(mat.df, text_data$category)
+colnames(mat.df)[ncol(mat.df)] <- "category"
 
-text_data$Category_TDA <- NA
-text_data$correct <- NA
+train <- sample(nrow(mat.df), ceiling(nrow(mat.df) * .70))
+test <- (1:nrow(mat.df))[- train]
+cl <- mat.df$category
 
-text_data$Category_TDA[text_data$Betti_Num <= 2] = 'entertainment'
-text_data$Category_TDA[text_data$Betti_Num == 3] = 'business'
-text_data$Category_TDA[text_data$Betti_Num == 4 | text_data$Betti_Num == 5 | text_data$Betti_Num == 6] = 'sport'
-text_data$Category_TDA[text_data$Betti_Num >= 9] = 'tech'
-text_data$Category_TDA[text_data$Betti_Num == 7 | text_data$Betti_Num == 8] = 'politics'
-
-value <- stringr::str_detect( text_data$Category_TDA,text_data$category)
-text_data$correct <- value
-text_data$correct <- as.integer(as.logical(text_data$correct))
-text_data$correct[is.na(text_data$correct)]<- 0
-sum(text_data$correct/num_articles)
+modeldata <- mat.df[,!colnames(mat.df) %in% "category"]
+knn.pred <- knn(modeldata[train,], modeldata[test, ], cl[train], k = sqrt(num_articles))
+conf.mat <- table("Predictions" = knn.pred, Actual = cl[test])
+conf.mat
+(accuracy <- sum(diag(conf.mat))/length(test) * 100)
 ```
+#KNN Clustering Algorithm with BettiNum input
+```{r}
+set.seed(8)
+mat.df <- as.data.frame(as.matrix(dist(text_data$Betti_Num), stringsAsfactors = FALSE))
+mat.df <- cbind(mat.df, text_data$category)
+colnames(mat.df)[ncol(mat.df)] <- "category"
+train <- sample(nrow(mat.df), ceiling(nrow(mat.df) * .70))
+test <- (1:nrow(mat.df))[- train]
+cl <- mat.df[,"category"]
 
-
+modeldata <- mat.df[,!colnames(mat.df) %in% "category"]
+knn.pred <- knn(modeldata[train,], modeldata[test, ], cl[train], k = sqrt(nrow(text_data)))
+conf.mat <- table("Predictions" = knn.pred, Actual = cl[test])
+conf.mat
+(accuracy <- sum(diag(conf.mat))/length(test) * 100)
+```

@@ -244,28 +244,3 @@ conf.mat
 (accuracy <- sum(diag(conf.mat))/length(test) * 100)
 ```
 
-#KNN Clustering Algorithm with BettiNum and Tf-idf
-
-set.seed(10)
-article_tdm <- preprocess_corpus(Corpus(VectorSource(buzzfeed_df$text)))
-article.df <- t(as.data.frame(data.matrix(article_tdm), stringsAsfactors = FALSE))
-
-mat.df <- as.data.frame(as.matrix(dist(buzzfeed_df$Betti_Num), stringsAsfactors = FALSE))
-mat.df <- cbind(mat.df, buzzfeed_df$type)
-colnames(mat.df)[ncol(mat.df)] <- "category"
-mat.df <- cbind(mat.df, article.df)
-
-
-train <- sample(nrow(mat.df), ceiling(nrow(mat.df) * .70))
-test <- (1:nrow(mat.df))[- train]
-cl <- mat.df[,"category"]
-
-modeldata <- mat.df[,!colnames(mat.df) %in% "category"]
-knn.pred <- knn(modeldata[train,], modeldata[test, ], cl[train], k = sqrt(nrow(buzzfeed_df)))
-conf.mat <- table("Predictions" = knn.pred, Actual = cl[test])
-conf.mat
-(accuracy <- sum(diag(conf.mat))/length(test) * 100)
-
-```{r}
-```
-
