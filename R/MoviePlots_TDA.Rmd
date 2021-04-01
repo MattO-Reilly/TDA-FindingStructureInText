@@ -201,7 +201,7 @@ test <- predict(model, ds$test, cores=parallel::detectCores())
 #test
 
 # Evaluate the models
-measures <- c("subset-accuracy", "F1", "hamming-loss", "macro-based") 
+measures <- c("F1") 
 
 result <- cbind(
   Test = multilabel_evaluate(ds$tes, test, measures)
