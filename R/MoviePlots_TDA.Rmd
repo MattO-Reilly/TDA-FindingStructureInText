@@ -23,12 +23,15 @@ library(tm) #NLP
 library(textstem) #Text Lemmatizer
 library(superml)
 
-
+#TDA
 library(TDAmapper) #Mapper algorithm
 library(igraph) #Plotting mapper
 library(TDAstats)
 library(TDA)
 library(class)
+
+#Multi-label KNN
+library(mlr3)
 ```
 
 
@@ -61,14 +64,53 @@ movies<- movies[subset,]
 
 movie_tags <- Corpus(VectorSource(movies$tags))
 
-pattern = c("boring", "adult", "bleak", "cult", "flashback", "humor", "satire","paranormal","suspenseful", "good versus evil", "historical fiction", "psychedelic", "violence", "historical fiction", "allegory", "fantasy","horror", "gothic", "atmospheric", "inspiring", "queer", "stupid", "feel-good", "cruelty", "dramatic","action", "revenge", "sadist", "mystery", "neo noir", "tragedy", "haunting", "sentimental" , "historical", "storytelling", "home movie", "philosophical", "cute", "pornographic", "plot twist", "prank", "claustrophobic", "insanity", "brainwashing", "sci-fi", "dark", "psychological", "absurd", "alternate reality", "alternate history", "comic", "grindhouse film", "thought-provoking", "melodrama", "depressing", "realism", "western", "clever", "whimsical", "ent...", "intrigue", "realism", "anti war", "blaxploitation", "avant garde", "autobiographical", "suicidal")
+pattern = c("boring", "adult", "bleak", "cult", "flashback", "humor", "satire","paranormal","suspenseful", "good versus evil", "historical fiction", "psychedelic", "violence", "historical fiction", "allegory", "fantasy","horror", "gothic", "atmospheric", "inspiring", "queer", "stupid", "feel-good", "cruelty", "dramatic","action", "revenge", "sadist", "mystery", "neo noir", "tragedy", "haunting", "sentimental" , "historical", "storytelling", "home movie", "philosophical", "cute", "pornographic", "plot twist", "prank", "claustrophobic", "insanity", "brainwashing", "sci-fi", "dark", "psychological", "absurd", "alternate reality", "alternate history", "comic", "grindhouse film", "thought-provoking", "melodrama", "depressing", "realism", "western", "clever", "whimsical", "ent...", "intrigue", "realism", "anti war", "blaxploitation", "avant garde", "autobiographical", "suicidal", "magical")
 
 corpus <- tm_map(movie_tags, removeWords, pattern)
 movies$tags <- lapply(corpus, as.character)
-movies$tags <- gsub("[.?!]*(?=[.?!]$)", "", movies$tags, perl=T)
-#movies$tags <- gsub(",","", movies$tags, perl=T)
 
-movies$tags
+#Remove duplicate tags
+rem_dup_word <- function(x){
+x <- tolower(x)
+paste(unique(trimws(unlist(strsplit(x,split=" ",fixed=F,perl=T)))),collapse = 
+" ")
+}
+movies$tags <- sapply(movies$tags, rem_dup_word)
+
+movies$tags <- gsub("[.?!]*(?=[.?!]$)", "", movies$tags, perl=T)
+movies$tags <- gsub(", ,","", movies$tags, perl=T)
+movies$tags <- gsub(" ,","", movies$tags, perl=T)
+movies$tags <- gsub(",","   ", movies$tags, perl=T)
+movies$tags <- stripWhitespace(movies$tags)
+
+
+movies$tags = unname(sapply(movies$tags, function(x) {
+    paste(sort(trimws(strsplit(x, ','))), collapse=',')} ))
+movies$tags <- gsub(" ",", ", movies$tags, perl=T)
+
+
+
+
+
+##Create MultiLabels 
+movies$romantic <- NA
+movies$entertaining <- NA
+movies$comedy <- NA
+movies$murder <- NA
+
+movies$romantic[str_detect(movies$tags, "romantic", negate = FALSE) == TRUE] <- 1
+movies$romantic[is.na(movies$romantic)] <- 0
+
+movies$entertaining[str_detect(movies$tags, "entertaining", negate = FALSE) == TRUE] <- 1
+movies$entertaining[is.na(movies$entertaining)] <- 0
+
+movies$comedy[str_detect(movies$tags, "comedy", negate = FALSE) == TRUE] <- 1
+movies$comedy[is.na(movies$comedy)] <- 0
+
+movies$murder[str_detect(movies$tags, "murder", negate = FALSE) == TRUE] <- 1
+movies$murder[is.na(movies$murder)] <- 0
+View(movies)
+
 ```
 
 
@@ -123,31 +165,56 @@ bettinum <- function(x){
 article <- as.character(x) 
 article_lines <- unlist(strsplit(article, "(?<=[[:alnum:]]{3})[?!.]\\s", perl=TRUE)) #Split article into sentences
 article_tdm <- preprocess_corpus(Corpus(VectorSource(article_lines)))
-#article_tdm <- removeSparseTerms(article_tdm, 0.95)
+article_tdm <- removeSparseTerms(article_tdm, 0.95)
 hom <- calculate_homology(article_tdm)
-bettinum <- sum((hom[, "death"] - hom[, "birth"] >=0.005) & hom[, "dimension"] == 1)
+bettinum <- sum((hom[, "death"] - hom[, "birth"] >=0.0001) & hom[, "dimension"] == 1)
 }
 #movies$plot_synopsis[1:5]
 bettiNum_list <- lapply(movies$plot_synopsis, bettinum)
 movies$Betti_Num <- bettiNum_list
-View(movies)
 ```
 
-#KNN Clustering Algorithm with BettiNum input
+
 ```{r}
+library(mldr)
+library(utiml)
+library(randomForest)
 set.seed(8)
 mat.df <- as.data.frame(as.matrix(dist(movies$Betti_Num), stringsAsfactors = FALSE))
-mat.df <- cbind(mat.df, movies$tags)
-colnames(mat.df)[ncol(mat.df)] <- "category"
+mat.df <- cbind(mat.df, movies[,7:10])
 
-train <- sample(nrow(mat.df), ceiling(nrow(mat.df) * .70))
-test <- (1:nrow(mat.df))[- train]
+# Create two partitions (train and test) of toyml multi-label dataset
+movies_mldr <- mldr_from_dataframe(mat.df, labelIndices = c(455:458), attributes, "movies")
 
-cl <- mat.df[,"category"]
 
-modeldata <- mat.df[,!colnames(mat.df) %in% "category"]
-knn.pred <- knn(modeldata[train,], modeldata[test, ], cl[train], k = sqrt(nrow(text_data)))
-conf.mat <- table("Predictions" = knn.pred, Actual = cl[test])
-conf.mat
-(accuracy <- sum(diag(conf.mat))/length(test) * 100)
+# Create two partitions (train, test) of emotions dataset
+partitions <- c(train = 0.6, test = 0.4)
+ds <- create_holdout_partition(movies_mldr, partitions, method="iterative")
+
+#MLKNN
+model <- mlknn(movies_mldr, k = 4, s=1)
+pred <- predict(model, movies_mldr)
+
+
+# Predict
+test <- predict(model, ds$test, cores=parallel::detectCores())
+#test
+
+# Evaluate the models
+measures <- c("subset-accuracy", "F1", "hamming-loss", "macro-based") 
+
+result <- cbind(
+  Test = multilabel_evaluate(ds$tes, test, measures)
+)
+
+print(round(result, 3))
+
 ```
+
+#Jaccard Index
+```{r}
+library('clusteval')
+cluster_similarity(movies$romantic, movies$entertaining, movies$comedy, movies$murder, similarity="jaccard", method="independence")
+
+```
+

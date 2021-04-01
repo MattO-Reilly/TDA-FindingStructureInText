@@ -122,7 +122,7 @@ set.seed(10)
 Fake_tdm <- preprocess_corpus(Corpus(VectorSource(buzzfeed_fake$text)))
 Fake_lf_terms <- findFreqTerms(Fake_tdm, lowfreq=50) 
 Fake_tdm <- removeSparseTerms(Fake_tdm , 0.73)
-Fake_barcode <- ripsDiag(as.matrix(Fake_tdm), 1, 0.2, printProgress = FALSE)
+Fake_barcode <- ripsDiag(as.matrix(Fake_tdm), 1, 0.15, printProgress = FALSE)
 plot(Fake_barcode[["diagram"]],barcode = TRUE)
 Fake_freqwords <- findMostFreqTerms(Fake_tdm, n = 100)
 ```
@@ -132,7 +132,7 @@ Fake_freqwords <- findMostFreqTerms(Fake_tdm, n = 100)
 #Create Corpus of all articles and apply Natural Language Process to it
 Real_tdm <- preprocess_corpus(Corpus(VectorSource(buzzfeed_real$text)))
 Real_tdm <- removeSparseTerms(Real_tdm , 0.73)
-Real_barcode <- ripsDiag(as.matrix(Real_tdm), 1, 0.2, printProgress = FALSE)
+Real_barcode <- ripsDiag(as.matrix(Real_tdm), 1, 0.15, printProgress = FALSE)
 plot(Real_barcode[["diagram"]],barcode = TRUE)
 Real_freqwords <- findMostFreqTerms(Real_tdm, n = 100)
 ```
@@ -242,5 +242,16 @@ knn.pred <- knn(modeldata[train,], modeldata[test, ], cl[train], k = sqrt(nrow(b
 conf.mat <- table("Predictions" = knn.pred, Actual = cl[test])
 conf.mat
 (accuracy <- sum(diag(conf.mat))/length(test) * 100)
+
+# Precision: tp/(tp+fp):
+precision <- conf.mat[1,1]/sum(conf.mat[1,1:2])
+
+# Recall: tp/(tp + fn):
+recall <- conf.mat[1,1]/sum(conf.mat[1:2,1])
+
+# F-Score: 2 * precision * recall /(precision + recall):
+Fscore <- 2 * precision * recall / (precision + recall)
+
+Fscore
 ```
 
