@@ -25,6 +25,8 @@ library(tokenizers) #tokenize_sentences function
 library(qdap)#rm_stopwords function
 library(tm) #NLP
 library(textstem) #Text Lemmatizer
+library(class)
+
 
 library(TDAstats)
 library(TDA)
@@ -166,7 +168,7 @@ m1 <- mapper1D(
     filter_values = 1:nrow(buzzfeed_df),
     num_intervals = 2,
     percent_overlap = 50,
-    num_bins_when_clustering = 10)
+    num_bins_when_clustering = 40)
 m1
 m1.graph <- graph.adjacency(m1$adjacency, mode="undirected")
 plot(m1.graph, layout = layout.auto(m1.graph) )

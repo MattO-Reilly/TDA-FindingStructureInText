@@ -132,15 +132,13 @@ preprocess_corpus <- function(corpus){
   corpus <- tm_map(corpus, clean_text)
   # Remove english common stopwords
   corpus <- tm_map(corpus, removeWords, stopwords("english"))
-  # Remove name of newspapers from the corpus
-  corpus <- tm_map(corpus, removeWords, c("eagle rising","freedom daily"))
   # 'stem' words to root words
   corpus <- tm_map(corpus,stemDocument)
   # Eliminate extra white spaces
   corpus <- tm_map(corpus, stripWhitespace)
   #Remove single letter words
   corpus <- tm_map(corpus, content_transformer(removeSingle))
-  terms <-TermDocumentMatrix(corpus,control = list(weighting = function(x) weightTfIdf(x, normalize = TRUE)))
+  terms <-DocumentTermMatrix(corpus,control = list(weighting = function(x) weightTfIdf(x, normalize = TRUE)))
 
   return (terms)
 }
@@ -167,19 +165,44 @@ article_lines <- unlist(strsplit(article, "(?<=[[:alnum:]]{3})[?!.]\\s", perl=TR
 article_tdm <- preprocess_corpus(Corpus(VectorSource(article_lines)))
 article_tdm <- removeSparseTerms(article_tdm, 0.95)
 hom <- calculate_homology(article_tdm)
-bettinum <- sum((hom[, "death"] - hom[, "birth"] >=0.0001) & hom[, "dimension"] == 1)
+bettinum <- sum((hom[, "death"] - hom[, "birth"] >=0.0005) & hom[, "dimension"] == 1)
 }
 #movies$plot_synopsis[1:5]
 bettiNum_list <- lapply(movies$plot_synopsis, bettinum)
 movies$Betti_Num <- bettiNum_list
 ```
 
+```{r}
+bettiNum <- as.matrix(bettiNum_list)
+bettiNum.dist <- dist(bettiNum_list)
+m1 <- mapper1D(
+    distance_matrix = bettiNum.dist,
+    filter_values = 1:nrow(movies),
+    num_intervals = 4,
+    percent_overlap = 50,
+    num_bins_when_clustering = 65)
+m1
+m1.graph <- graph.adjacency(m1$adjacency, mode="undirected")
+plot(m1.graph, layout = layout.auto(m1.graph) )
+
+
+vertex.size <- rep(0,m1$num_vertices)
+for (i in 1:m1$num_vertices){
+  points.in.vertex <- m1$points_in_vertex[[i]]
+  vertex.size[i] <- length((m1$points_in_vertex[[i]]))
+}
+V(m1.graph)$size <- vertex.size
+
+plot(m1.graph,main ="Mapper Graph")
+```
+
+
+
 
 ```{r}
 library(mldr)
 library(utiml)
 library(randomForest)
-set.seed(8)
 mat.df <- as.data.frame(as.matrix(dist(movies$Betti_Num), stringsAsfactors = FALSE))
 mat.df <- cbind(mat.df, movies[,7:10])
 
@@ -188,7 +211,7 @@ movies_mldr <- mldr_from_dataframe(mat.df, labelIndices = c(455:458), attributes
 
 
 # Create two partitions (train, test) of emotions dataset
-partitions <- c(train = 0.6, test = 0.4)
+partitions <- c(train = 0.7, test = 0.3)
 ds <- create_holdout_partition(movies_mldr, partitions, method="iterative")
 
 #MLKNN
@@ -211,10 +234,4 @@ print(round(result, 3))
 
 ```
 
-#Jaccard Index
-```{r}
-library('clusteval')
-cluster_similarity(movies$romantic, movies$entertaining, movies$comedy, movies$murder, similarity="jaccard", method="independence")
-
-```
 

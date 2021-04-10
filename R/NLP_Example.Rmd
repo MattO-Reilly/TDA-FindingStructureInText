@@ -40,7 +40,7 @@ for (i in 1:4) print (corpus[[i]]$content)
 ```
 
 ```{r}
-terms <-TermDocumentMatrix(corpus,control = list(weighting = function(x) weightTfIdf(x, normalize = TRUE)))
+terms <-DocumentTermMatrix(corpus,control = list(weighting = function(x) weightTfIdf(x, normalize = TRUE)))
 as.matrix(terms)
 ```
 ```{r}
