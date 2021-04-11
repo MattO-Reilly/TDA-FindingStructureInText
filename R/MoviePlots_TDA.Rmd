@@ -163,9 +163,9 @@ bettinum <- function(x){
 article <- as.character(x) 
 article_lines <- unlist(strsplit(article, "(?<=[[:alnum:]]{3})[?!.]\\s", perl=TRUE)) #Split article into sentences
 article_tdm <- preprocess_corpus(Corpus(VectorSource(article_lines)))
-article_tdm <- removeSparseTerms(article_tdm, 0.95)
+#article_tdm <- removeSparseTerms(article_tdm, 0.95)
 hom <- calculate_homology(article_tdm)
-bettinum <- sum((hom[, "death"] - hom[, "birth"] >=0.0005) & hom[, "dimension"] == 1)
+bettinum <- sum((hom[, "death"] - hom[, "birth"] >=0.0025) & hom[, "dimension"] == 1)
 }
 #movies$plot_synopsis[1:5]
 bettiNum_list <- lapply(movies$plot_synopsis, bettinum)

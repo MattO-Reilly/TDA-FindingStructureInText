@@ -94,7 +94,7 @@ preprocess_corpus <- function(corpus){
   corpus <- tm_map(corpus, stripWhitespace)
   #Remove single letter words
   corpus <- tm_map(corpus, content_transformer(removeSingle))
-  terms <-TermDocumentMatrix(corpus,control = list(weighting = function(x) weightTfIdf(x, normalize = TRUE)))
+  terms <-DocumentTermMatrix(corpus,control = list(weighting = function(x) weightTfIdf(x, normalize = TRUE)))
 
   return (terms)
 }
@@ -116,9 +116,6 @@ article_tdm <- preprocess_corpus(Corpus(VectorSource(buzzfeed_df$text)))
 
 #Fake Articles Barcode
 ```{r}
-
-set.seed(10)
-
 
 #Create Corpus of all articles and apply Natural Language Process to it
 Fake_tdm <- preprocess_corpus(Corpus(VectorSource(buzzfeed_fake$text)))
@@ -144,9 +141,9 @@ bettinum <- function(x){
 article <- as.character(x) 
 article_tdm <- unlist(strsplit(article, "(?<=[[:alnum:]]{3})[?!.]\\s", perl=TRUE)) #Split article into sentences
 article_tdm <- preprocess_corpus(Corpus(VectorSource(article_tdm)))
-article_tdm <- removeSparseTerms(article_tdm, 0.93)
+#article_tdm <- removeSparseTerms(article_tdm, 0.93)
 hom <- calculate_homology(article_tdm) 
-bettinum <- sum((hom[, "death"] - hom[, "birth"] > 0.005) & hom[, "dimension"] == 1)
+bettinum <- sum((hom[, "death"] - hom[, "birth"] > 0.00001) & hom[, "dimension"] == 1)
 }
 
 bettiNum_list <- as.list(apply(buzzfeed_df['text'],1 , bettinum))
@@ -207,26 +204,6 @@ The 95% confidence interval for Fake articles is
 The 95% confidence interval for Real articles is
 `r round((mean_real - error_real),2)`, `r round((mean_real + error_real),2)`
 (2.28,3.32)
-
-
-#KNN Clustering Algorithm with TF-idf input
-```{r, warning=FALSE}
-article_tdm <- preprocess_corpus(Corpus(VectorSource(buzzfeed_df$text)))
-mat.df <- as.data.frame(data.matrix(article_tdm), stringsAsfactors = FALSE)
-mat.df <- t(mat.df)
-mat.df <- cbind(mat.df, buzzfeed_df$type)
-colnames(mat.df)[ncol(mat.df)] <- "category"
-
-train <- sample(nrow(mat.df), ceiling(nrow(mat.df) * .70))
-test <- (1:nrow(mat.df))[- train]
-cl <- mat.df[,"category"]
-
-modeldata <- mat.df[,!colnames(mat.df) %in% "category"]
-knn.pred <- knn(modeldata[train,], modeldata[test, ], cl[train], k = sqrt(nrow(buzzfeed_df)))
-conf.mat <- table("Predictions" = knn.pred, Actual = cl[test])
-conf.mat
-(accuracy <- sum(diag(conf.mat))/length(test) * 100)
-```
 
 
 #KNN Clustering Algorithm with BettiNum input
