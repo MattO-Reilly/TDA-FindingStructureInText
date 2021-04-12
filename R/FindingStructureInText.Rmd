@@ -161,23 +161,13 @@ bettiNum.dist <- dist(bettiNum)
 m1 <- mapper1D(
     distance_matrix = bettiNum.dist,
     filter_values = 1:num_articles,
-    num_intervals = 5,
+    num_intervals = 4,
     percent_overlap = 50,
-    num_bins_when_clustering =5)
+    num_bins_when_clustering =10)
 m1
 m1.graph <- graph.adjacency(m1$adjacency, mode="undirected")
 plot(m1.graph, layout = layout.auto(m1.graph) )
 
-vertex.size <- rep(0,m1$num_vertices)
-for (i in 1:m1$num_vertices){
-  points.in.vertex <- m1$points_in_vertex[[i]]
-  vertex.size[i] <- length((m1$points_in_vertex[[i]]))
-}
-V(m1.graph)$size <- vertex.size
-
-plot(m1.graph,main ="Mapper Graph")
-legend(x=-2, y=-1, c("y small","y medium","large y"),pch=21,
-       col="#777777", pt.bg=c(1,0.5,0), pt.cex=2, cex=.8, bty="n", ncol=1)
 ```
 
 #KNN Clustering Algorithm with BettiNum input

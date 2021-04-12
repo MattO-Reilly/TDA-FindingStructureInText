@@ -180,20 +180,10 @@ m1 <- mapper1D(
     filter_values = 1:nrow(movies),
     num_intervals = 4,
     percent_overlap = 50,
-    num_bins_when_clustering = 65)
+    num_bins_when_clustering = 10)
 m1
 m1.graph <- graph.adjacency(m1$adjacency, mode="undirected")
 plot(m1.graph, layout = layout.auto(m1.graph) )
-
-
-vertex.size <- rep(0,m1$num_vertices)
-for (i in 1:m1$num_vertices){
-  points.in.vertex <- m1$points_in_vertex[[i]]
-  vertex.size[i] <- length((m1$points_in_vertex[[i]]))
-}
-V(m1.graph)$size <- vertex.size
-
-plot(m1.graph,main ="Mapper Graph")
 ```
 
 
