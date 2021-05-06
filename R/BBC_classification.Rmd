@@ -34,7 +34,7 @@ library(class)
 
 ```{r}
 num_articles = 600
-text_data <- read_excel("../data/bbc-text.xlsx", col_types = 'text', .name_repair = "minimal")
+text_data <- read_excel("./data/bbc-text.xlsx", col_types = 'text', .name_repair = "minimal")
 text_data <- text_data[1:num_articles,]
 ```
 

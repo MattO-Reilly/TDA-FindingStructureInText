@@ -35,8 +35,8 @@ library(TDAmapper) #Mapper algorithm
 ```
 
 ```{r}
-buzzfeed_real <- read_excel('../data/Buzzfeed/BuzzFeed_real_news_content.xlsx', col_types = "text")
-buzzfeed_fake <- read_excel('../data/Buzzfeed/BuzzFeed_fake_news_content.xlsx', col_types = "text")
+buzzfeed_real <- read_excel('./data/Buzzfeed/BuzzFeed_real_news_content.xlsx', col_types = "text")
+buzzfeed_fake <- read_excel('./data/Buzzfeed/BuzzFeed_fake_news_content.xlsx', col_types = "text")
 ```
 
 

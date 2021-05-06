@@ -36,7 +36,7 @@ library(mlr3)
 
 
 ```{r}
-movies <- read_excel("../data/mpst_full_data.xlsx", col_types = 'text', .name_repair = "minimal")
+movies <- read_excel("./data/mpst_full_data.xlsx", col_types = 'text', .name_repair = "minimal")
 movies <- movies [,1:6]
 
 #Subset genres we will study
